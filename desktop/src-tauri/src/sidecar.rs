@@ -31,6 +31,8 @@ struct Inner {
     generation: u64,
     budget: RestartBudget,
     stderr: Tail,
+    /// Set when the app stops the sidecar on purpose: its exit is not a crash.
+    stopping: bool,
     status: Status,
 }
 
@@ -46,6 +48,7 @@ impl Sidecar {
                 child: None,
                 generation: 0,
                 budget: RestartBudget::new(3, Duration::from_secs(60)),
+                stopping: false,
                 stderr: Tail::new(50),
                 status: Status::Starting,
             }),
@@ -105,6 +108,10 @@ impl Sidecar {
             inner.status = Status::Starting;
         }
         Self::start(app);
+        // The frontend reconnects (handshake, fresh subscriptions) on this.
+        if matches!(state.status(), Status::Running { .. }) {
+            let _ = app.emit("serve_restarted", ());
+        }
     }
 
     /// Sends one request and waits for its response. `id` is chosen by the
@@ -149,7 +156,9 @@ impl Sidecar {
     }
 
     pub fn kill(&self) {
-        if let Some(child) = self.inner.lock().unwrap().child.take() {
+        let mut inner = self.inner.lock().unwrap();
+        inner.stopping = true;
+        if let Some(child) = inner.child.take() {
             let _ = child.kill();
         }
     }
@@ -219,7 +228,7 @@ fn on_exit(app: &AppHandle, generation: u64, reason: String) {
     let state = app.state::<Sidecar>();
     let restart = {
         let mut inner = state.inner.lock().unwrap();
-        if inner.generation != generation {
+        if inner.stopping || inner.generation != generation {
             return; // an older child; the current one is fine
         }
         inner.child = None;

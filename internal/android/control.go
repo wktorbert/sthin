@@ -121,7 +121,11 @@ func (p *Provider) LogStream(ctx context.Context, id string) (<-chan logs.Line, 
 	go func() {
 		defer close(out)
 		for s := range raw {
-			out <- logs.ParseLogcat(s)
+			select {
+			case out <- logs.ParseLogcat(s):
+			case <-ctx.Done():
+				return // the reader stopped listening; never block on a full channel
+			}
 		}
 	}()
 	return out, nil

@@ -11,17 +11,24 @@ export async function bindTray(): Promise<void> {
   const tray = await TrayIcon.getById("main");
   if (!tray) return;
   let last = "";
+  // Renders run one at a time, each reading the latest state, so an older
+  // menu can never be applied after a newer one.
+  let queue = Promise.resolve();
+  const schedule = () => {
+    queue = queue.then(render).catch(() => undefined);
+  };
   const render = async () => {
     const s = useLean.getState();
     const busy = new Set(Object.entries(s.ops).filter(([, op]) => op.running).map(([id]) => id));
     const model = s.phase === "ready" ? trayModel(s.platforms, s.devices, busy) : trayModel([], [], busy);
     const key = JSON.stringify(model);
     if (key === last) return;
-    last = key;
     await tray.setMenu(await build(model));
+    last = key;
   };
-  useLean.subscribe(() => void render());
-  await render();
+  useLean.subscribe(schedule);
+  schedule();
+  await queue;
 }
 
 async function build(model: TrayEntry[]): Promise<Menu> {

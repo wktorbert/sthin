@@ -70,7 +70,11 @@ func (p *Provider) LogStream(ctx context.Context, udid string) (<-chan logs.Line
 			if s == "" || strings.HasPrefix(s, "Filtering the log data") || strings.HasPrefix(s, "Timestamp ") || strings.HasPrefix(s, "getpwuid_r") {
 				continue // log stream's own header lines and script's noise
 			}
-			out <- logs.ParseIOS(s)
+			select {
+			case out <- logs.ParseIOS(s):
+			case <-ctx.Done():
+				return // the reader stopped listening; never block on a full channel
+			}
 		}
 	}()
 	return out, nil

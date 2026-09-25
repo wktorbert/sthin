@@ -68,6 +68,9 @@ export const useLean = create<State>(() => ({
 const set = useLean.setState;
 const get = useLean.getState;
 let subscriptionId: number | null = null;
+// Bumped by every openLogs/closeLogs, so a slower, older openLogs can tell it
+// was superseded and must not overwrite the view or leave a stream running.
+let logSession = 0;
 
 /** Runs once at launch: listeners first, then the handshake. */
 export async function startApp(): Promise<void> {
@@ -88,6 +91,9 @@ export async function connect(): Promise<void> {
       return;
     }
     set({ init, phase: "ready" });
+    // After a restart the old process's log stream is gone and will never end.
+    const log = get().log;
+    if (log?.requestId != null) set({ log: { ...log, requestId: null, ended: "Lean restarted; reopen the log to follow it again" } });
     const s = start("devices_subscribe", {});
     subscriptionId = s.id;
     const listing = await s.result;
@@ -194,20 +200,24 @@ export async function refreshLeases(): Promise<void> {
 /** Opens the log viewer on a device: a snapshot, then live lines if asked. */
 export async function openLogs(deviceId: string): Promise<void> {
   await closeLogs();
+  const session = ++logSession;
   const log: LogView = { deviceId, requestId: null, buffer: new LogBuffer(), version: 0, filter: { text: "", minLevel: Level.Verbose }, follow: true };
   set({ log, view: "logs" });
   try {
     const snap = await call("logs", { id: deviceId, lines: 500 });
+    if (session !== logSession) return;
     log.buffer.add(snap.lines);
     const s = start("logs_follow", { id: deviceId });
     set({ log: { ...log, requestId: s.id, version: 1 } });
     await s.result;
+    if (session !== logSession) void cancel(s.id);
   } catch (e) {
-    set({ log: { ...log, ended: message(e), version: 1 } });
+    if (session === logSession) set({ log: { ...log, ended: message(e), version: 1 } });
   }
 }
 
 export async function closeLogs(): Promise<void> {
+  logSession++;
   const log = get().log;
   if (log?.requestId != null) await cancel(log.requestId);
   set({ log: undefined });
