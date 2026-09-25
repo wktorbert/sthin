@@ -17,6 +17,7 @@ import (
 	"github.com/wktorbert/lean-sim/internal/device"
 	"github.com/wktorbert/lean-sim/internal/host"
 	"github.com/wktorbert/lean-sim/internal/lease"
+	"github.com/wktorbert/lean-sim/internal/ops"
 	"github.com/wktorbert/lean-sim/internal/project"
 )
 
@@ -134,90 +135,21 @@ func (t tools) resolve(ctx context.Context, id string) (device.Provider, device.
 	return t.Reg.Resolve(ctx, id)
 }
 
+// resolveVirtual, controller and runBoot are the shared rules in internal/ops.
 func (t tools) resolveVirtual(ctx context.Context, id, op string) (device.Provider, device.Device, error) {
-	p, d, err := t.resolve(ctx, id)
-	if err != nil {
-		return nil, device.Device{}, err
-	}
-	if d.Kind == device.Physical {
-		return nil, device.Device{}, fmt.Errorf("%w: %s is a physical device; Lean never modifies physical devices (%s refused)", device.ErrUsage, d.Name, op)
-	}
-	return p, d, nil
+	return ops.ResolveVirtual(ctx, t.Reg, id, op)
 }
 
-func controller(p device.Provider) (device.Controller, error) {
-	c, ok := p.(device.Controller)
-	if !ok {
-		return nil, fmt.Errorf("%s provider cannot drive devices", p.Platform())
-	}
-	return c, nil
-}
+func controller(p device.Provider) (device.Controller, error) { return ops.Controller(p) }
 
-// bootResult is what boot and lease report back.
-type bootResult struct {
-	Device      device.Device  `json:"device"`
-	Stages      []device.Stage `json:"stages"`
-	FootprintMB *int           `json:"footprint_mb,omitempty"`
-	Error       string         `json:"error,omitempty"`
-}
-
-func runBoot(ctx context.Context, p device.Provider, d device.Device, opts device.BootOptions) bootResult {
-	res := bootResult{Device: d, Stages: []device.Stage{}}
-	err := p.Boot(ctx, d.ID, opts, func(s device.Stage) {
-		if s.Status == device.StageRunning {
-			return
-		}
-		res.Stages = append(res.Stages, s)
-		if s.Measurement != nil {
-			mb := s.Measurement.FootprintMB
-			res.FootprintMB = &mb
-		}
-	})
-	if err != nil {
-		res.Error = err.Error()
-	} else {
-		res.Device.State = device.Booted
-	}
-	return res
+func runBoot(ctx context.Context, p device.Provider, d device.Device, opts device.BootOptions) ops.BootResult {
+	return ops.RunBoot(ctx, p, d, opts, nil)
 }
 
 // ---- tools ----
 
-type listedDevice struct {
-	device.Device
-	Lease *lease.Lease `json:"lease,omitempty"`
-}
-
 func (t tools) devicesList(ctx context.Context, _ *mcp.CallToolRequest, in platformIn) (*mcp.CallToolResult, any, error) {
-	type platformOut struct {
-		Platform  device.Platform `json:"platform"`
-		Available bool            `json:"available"`
-		Reason    string          `json:"reason,omitempty"`
-		Error     string          `json:"error,omitempty"`
-	}
-	out := struct {
-		SchemaVersion int            `json:"schema_version"`
-		Platforms     []platformOut  `json:"platforms"`
-		Devices       []listedDevice `json:"devices"`
-	}{SchemaVersion: 1, Platforms: []platformOut{}, Devices: []listedDevice{}}
-	for _, pl := range t.Reg.ListAll(ctx) {
-		if in.Platform != "" && string(pl.Platform) != in.Platform {
-			continue
-		}
-		po := platformOut{Platform: pl.Platform, Available: pl.Available, Reason: pl.Reason}
-		if pl.Err != nil {
-			po.Error = pl.Err.Error()
-		}
-		out.Platforms = append(out.Platforms, po)
-		for _, d := range pl.Devices {
-			ld := listedDevice{Device: d}
-			if l, held, _ := t.Pool.Get(d.ID); held {
-				ld.Lease = &l
-			}
-			out.Devices = append(out.Devices, ld)
-		}
-	}
-	return jsonResult(out)
+	return jsonResult(ops.List(ctx, t.Reg, t.Pool, in.Platform))
 }
 
 func (t tools) boot(ctx context.Context, _ *mcp.CallToolRequest, in bootIn) (*mcp.CallToolResult, any, error) {
@@ -364,7 +296,7 @@ func (t tools) lease(ctx context.Context, _ *mcp.CallToolRequest, in leaseIn) (*
 	if ttl <= 0 {
 		ttl = 30 * time.Minute
 	}
-	var res bootResult
+	var res ops.BootResult
 	d, l, err := lease.Acquire(ctx, t.Reg, t.Pool, device.Platform(in.Platform), in.Owner, ttl, func(ctx context.Context, p device.Provider, d device.Device) error {
 		res = runBoot(ctx, p, d, device.BootOptions{Headless: true})
 		if res.Error != "" {
