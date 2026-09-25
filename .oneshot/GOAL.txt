@@ -1,0 +1,8 @@
+./verify.sh has been run in this conversation with its final line reading
+exactly "ONESHOT-VERIFY: PASS", and the output of
+`grep -l 'status: done' .oneshot/tickets/*.md | wc -l` shown in this
+conversation equals the output of `ls .oneshot/tickets/*.md | wc -l`, and .oneshot/PROGRESS.md records the outcome
+of each ticket. Each turn begins by stating "Turn N of 40"; if a
+turn is numbered above 40 without PASS, stop and write a summary of
+what remains to .oneshot/PROGRESS.md instead. Do not modify verify.sh to make
+it pass; if a check is genuinely wrong, say so in PROGRESS.md and stop.

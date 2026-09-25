@@ -1,0 +1,14 @@
+Lean
+Copyright (c) 2026 Lean contributors. Licensed under the MIT License (see LICENSE).
+
+This product includes data (not code) derived from the following projects:
+
+- simslim (MobAI-App), MIT License.
+  The iOS Profile's launchd labels and category groupings in
+  internal/profile/ios.yaml are seeded from simslim's profile lists.
+
+- avdslim (kdbhalala), MIT License.
+  The Android Profile's package names and category groupings in
+  internal/profile/android.yaml are seeded from avdslim's package lists.
+
+No mechanism was copied as code from either project.

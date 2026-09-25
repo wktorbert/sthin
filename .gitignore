@@ -1,0 +1,20 @@
+# Build output
+/bin/
+/dist/
+*.test
+*.out
+coverage.*
+
+# Editor and OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local-only harness state
+.claude/settings.local.json
+.oneshot/build.log
+*.log
+
+# Tests and captured fixtures are kept out of the repository
+*_test.go
+testdata/
