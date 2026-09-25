@@ -1,0 +1,143 @@
+# Checks every push and pull request on macOS and Windows; on a v* tag, builds,
+# signs (macOS), notarizes (macOS) and uploads the desktop app to a draft
+# GitHub Release. The CLI binaries ship from the same tag.
+#
+# macOS signing secrets (https://v2.tauri.app/distribute/sign/macos/):
+#   APPLE_CERTIFICATE (base64 .p12 of the Developer ID Application cert),
+#   APPLE_CERTIFICATE_PASSWORD, APPLE_SIGNING_IDENTITY, KEYCHAIN_PASSWORD,
+#   APPLE_API_ISSUER, APPLE_API_KEY, APPLE_API_KEY_BASE64 (App Store Connect key).
+# Windows builds are unsigned and published as a preview.
+name: desktop
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: macos-arm64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: macos-x64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: windows-x64-preview
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: desktop/pnpm-lock.yaml
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          components: rustfmt, clippy
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri
+
+      - name: Stamp the tag's version into the app and the sidecar
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          python3 - "$v" <<'PY'
+          import json, sys
+          p = "desktop/src-tauri/tauri.conf.json"
+          c = json.load(open(p)); c["version"] = sys.argv[1]
+          json.dump(c, open(p, "w"), indent=2)
+          PY
+
+      - name: Build the sidecar
+        run: scripts/build-sidecar.sh ${{ matrix.target }}
+
+      - name: Go checks (Serve protocol included)
+        if: matrix.os == 'macos-latest' && matrix.target == 'aarch64-apple-darwin'
+        run: go vet ./... && go test ./... -count=1
+
+      - name: Desktop checks
+        working-directory: desktop
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm -s typecheck
+          pnpm -s test
+          cargo fmt --manifest-path src-tauri/Cargo.toml --check
+          cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --target ${{ matrix.target }} -- -D warnings
+          cargo test --manifest-path src-tauri/Cargo.toml --target ${{ matrix.target }}
+        if: matrix.target != 'x86_64-apple-darwin'
+
+      - name: Write the App Store Connect key for notarization
+        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'macos-latest'
+        env:
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+        run: echo "$APPLE_API_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/apple-api-key.p8"
+
+      - name: Build, sign and release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_PATH: ${{ runner.temp }}/apple-api-key.p8
+        with:
+          projectPath: desktop
+          tauriScript: pnpm tauri
+          args: --target ${{ matrix.target }}
+          tagName: ${{ github.ref_name }}
+          releaseName: Lean ${{ github.ref_name }}
+          releaseDraft: true
+          assetNamePattern: "[name]_[version]_${{ matrix.suffix }}[ext]"
+
+  # The same tag ships the command-line binaries next to the desktop bundles.
+  cli:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build and attach lean binaries
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          for p in darwin/arm64 darwin/amd64 linux/amd64 windows/amd64; do
+            os="${p%/*}"; arch="${p#*/}"; ext=""; [ "$os" = windows ] && ext=".exe"
+            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
+              -ldflags "-s -w -X main.version=$v" -o "dist/lean_${v}_${os}_${arch}${ext}" ./cmd/lean
+          done
+          gh release upload "$GITHUB_REF_NAME" dist/* --clobber

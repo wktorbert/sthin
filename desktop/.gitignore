@@ -1,0 +1,7 @@
+node_modules/
+dist/
+# Cargo build output and Tauri's generated schemas
+src-tauri/target/
+src-tauri/gen/
+# Sidecars are built by scripts/build-sidecar.sh, never committed
+src-tauri/binaries/lean-*

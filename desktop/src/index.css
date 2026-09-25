@@ -1,0 +1,113 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+/* Dark mode follows the system; src/theme.ts toggles `.dark` on <html>. */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    /* Status colours from the palette: booted/ok, warnings, info, pink accent. */
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+    --color-pink: var(--pink);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Light: Alucard, Dracula's official light variant. */
+:root {
+    --background: #fffbeb;
+    --foreground: #1f1f1f;
+    --card: #fbf6e3;
+    --card-foreground: #1f1f1f;
+    --popover: #fffbeb;
+    --popover-foreground: #1f1f1f;
+    --primary: #644ac9;
+    --primary-foreground: #fffbeb;
+    --secondary: #efeddc;
+    --secondary-foreground: #1f1f1f;
+    --muted: #efeddc;
+    --muted-foreground: #635d97;
+    --accent: #cfcfde;
+    --accent-foreground: #1f1f1f;
+    --destructive: #cb3a2a;
+    --border: #dedccf;
+    --input: #cfcfde;
+    --ring: #644ac9;
+    --success: #14710a;
+    --warning: #a34d14;
+    --info: #036a96;
+    --pink: #a3144d;
+    --radius: 0.5rem;
+}
+
+/* Dark: Dracula, the TUI's palette. */
+.dark {
+    --background: #282a36;
+    --foreground: #f8f8f2;
+    --card: #21222c;
+    --card-foreground: #f8f8f2;
+    --popover: #21222c;
+    --popover-foreground: #f8f8f2;
+    --primary: #bd93f9;
+    --primary-foreground: #282a36;
+    --secondary: #44475a;
+    --secondary-foreground: #f8f8f2;
+    --muted: #343746;
+    --muted-foreground: #6272a4;
+    --accent: #44475a;
+    --accent-foreground: #f8f8f2;
+    --destructive: #ff5555;
+    --border: #3b3e51;
+    --input: #44475a;
+    --ring: #bd93f9;
+    --success: #50fa7b;
+    --warning: #ffb86c;
+    --info: #8be9fd;
+    --pink: #ff79c6;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+  body {
+    @apply bg-background text-foreground antialiased select-none;
+  }
+  html {
+    @apply font-sans;
+  }
+}

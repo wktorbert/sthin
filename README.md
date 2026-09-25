@@ -111,6 +111,25 @@ The list refreshes every 2 seconds while idle. Panels scroll to keep the selecti
 
 Exit codes: 0 success, 1 failure, 2 usage error or unknown device. Every `--json` output carries `"schema_version": 1`.
 
+## Desktop app
+
+`desktop/` is a Tauri app for macOS and Windows: a window with the same panels as the TUI, plus a menu-bar (Windows: notification-area) icon to boot, shut down, or restore a device without opening the window. Closing the window keeps Lean in the tray; quit from the tray menu or with Cmd+Q / Ctrl+Q.
+
+It bundles its own `lean` and talks to it through `lean serve`, a JSON-RPC session on stdio with live boot progress, log lines, and device-list updates. The protocol is in [docs/serve-protocol.md](docs/serve-protocol.md); the choice of Tauri over a Go GUI is in [docs/adr/0001-desktop-as-tauri-process-over-serve.md](docs/adr/0001-desktop-as-tauri-process-over-serve.md).
+
+Windows builds are a preview: Android only, and not yet verified on real hardware.
+
+```
+# needs Go, pnpm, and a Rust toolchain (rustup)
+scripts/build-sidecar.sh          # lean for this host, into desktop/src-tauri/binaries/
+cd desktop && pnpm install
+pnpm tauri dev                    # run with hot reload
+pnpm tauri build                  # .app / .dmg on macOS, NSIS installer on Windows
+./verify.sh                       # typecheck, frontend tests, rustfmt, clippy, Rust tests
+```
+
+A `v*` tag builds, signs and notarizes the macOS apps, builds the Windows installer, and attaches the `lean` binaries to a draft GitHub Release (`.github/workflows/desktop.yml`).
+
 ## Build
 
 ```
