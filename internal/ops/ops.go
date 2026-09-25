@@ -41,6 +41,9 @@ type BootResult struct {
 	Stages      []device.Stage `json:"stages"`
 	FootprintMB *int           `json:"footprint_mb,omitempty"`
 	Error       string         `json:"error,omitempty"`
+	// Err is the boot's error as returned, kept typed (for example a
+	// *device.StageError naming the failed stage and command).
+	Err error `json:"-"`
 }
 
 // RunBoot boots d with opts, collecting completed stages into the result. Every
@@ -60,7 +63,7 @@ func RunBoot(ctx context.Context, p device.Provider, d device.Device, opts devic
 		}
 	})
 	if err != nil {
-		res.Error = err.Error()
+		res.Error, res.Err = err.Error(), err
 	} else {
 		res.Device.State = device.Booted
 	}

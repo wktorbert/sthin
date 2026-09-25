@@ -51,7 +51,7 @@ check "AC3 build windows"        windows_build
 echo "── smoke ──────────────────────────────────"
 help_lists_commands() {
   local out; out="$(bin/lean --help)" || return 1
-  for c in list boot restore shutdown measure doctor profile version run logs mcp lease release leases adb; do
+  for c in list boot restore shutdown measure doctor profile version run logs mcp serve lease release leases adb; do
     grep -qE "^\s+$c\b" <<<"$out" || { echo "missing subcommand: $c"; return 1; }
   done
   out="$(bin/lean boot --help)" || return 1
@@ -177,6 +177,31 @@ print("ok:", len(tools), "tools;", len(d["devices"]), "devices via MCP")
 PYCHECK
 }
 check "AC12 mcp stdio smoke"     mcp_smoke
+
+serve_smoke() {
+  # Speak the desktop app's protocol to the real binary: initialize, then a
+  # read-only listing, doctor, and one usage error that must map to code 2.
+  python3 scripts/serve-client.py bin/lean devices_list doctor > /tmp/oneshot-serve.out || { cat /tmp/oneshot-serve.out; return 1; }
+  python3 scripts/serve-client.py bin/lean boot '{"id":"no-such-device-lean-verify"}' > /tmp/oneshot-serve-err.out
+  python3 - <<'PYCHECK'
+import json
+calls={}
+for l in open("/tmp/oneshot-serve.out"):
+    m=json.loads(l)
+    if "method" in m: calls[m["method"]]=m
+init=calls["initialize"]["result"]
+assert init["schema_version"]==1 and init["lean_version"], init
+assert {p["platform"] for p in init["platforms"]}=={"ios","android"}, init
+d=calls["devices_list"]["result"]
+assert d["schema_version"]==1 and any(x["platform"]=="ios" for x in d["devices"]), d
+doc=calls["doctor"]["result"]
+assert doc["blocking"] is False and len(doc["checks"])>=5, doc
+err=[json.loads(l) for l in open("/tmp/oneshot-serve-err.out") if '"boot"' in l][0]["error"]
+assert err["code"]==2 and "unknown device" in err["message"], err
+print("ok:", len(d["devices"]), "devices via serve; unknown device -> code 2")
+PYCHECK
+}
+check "AC13 serve stdio smoke"   serve_smoke
 
 TOTAL=$((PASSED + FAILED))
 echo
