@@ -18,3 +18,7 @@ coverage.*
 # Tests and captured fixtures are kept out of the repository
 *_test.go
 testdata/
+
+# Markdown docs stay local; only READMEs are tracked
+*.md
+!README.md
