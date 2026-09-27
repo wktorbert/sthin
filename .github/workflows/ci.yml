@@ -1,0 +1,45 @@
+# Go checks on every push and pull request: format, vet, tests, and a build
+# for every platform the CLI ships for. The desktop workflow covers the app;
+# verify.sh stays the local harness because its smoke checks need real
+# simulators and AVDs, which hosted runners do not have.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: vet
+        run: go vet ./...
+      - name: test
+        run: go test ./... -count=1
+      - name: build every platform
+        run: |
+          for p in darwin/arm64 darwin/amd64 linux/amd64 linux/arm64 windows/amd64; do
+            CGO_ENABLED=0 GOOS="${p%/*}" GOARCH="${p#*/}" go build -trimpath ./cmd/sthin
+          done
+      - name: release archives build cleanly
+        run: scripts/release-cli.sh 0.0.0-ci /tmp/dist >/dev/null && ls /tmp/dist
+
+  mac:
+    # macOS-only paths (simctl, devicectl, footprint) compile and their fixture tests run here.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./... && go test ./... -count=1

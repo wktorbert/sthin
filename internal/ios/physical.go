@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // physicalDevices lists paired physical iPhones and iPads through devicectl.

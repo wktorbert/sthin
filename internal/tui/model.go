@@ -9,9 +9,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/host"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/host"
+	"github.com/wktorbert/sthin/internal/state"
 )
 
 type mode int

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/ops"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/ops"
+	"github.com/wktorbert/sthin/internal/state"
 )
 
 type idIn struct {

@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/profile"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/profile"
+	"github.com/wktorbert/sthin/internal/state"
 )
 
 const (

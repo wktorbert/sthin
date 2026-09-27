@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // The wireless ADB dialog: connect to a phone over Wi-Fi, pairing first when

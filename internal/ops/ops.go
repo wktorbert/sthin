@@ -8,8 +8,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/lease"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/lease"
 )
 
 // ResolveVirtual finds a device by ID or exact name and refuses physical

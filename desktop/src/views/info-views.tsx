@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { refreshDoctor, refreshLeases, useSthin } from "@/store";
 
-const RELEASES = "https://github.com/wktorbert/lean-sim/releases";
+const RELEASES = "https://github.com/wktorbert/sthin/releases";
 
 const statusTone: Record<string, string> = {
   ok: "text-success",

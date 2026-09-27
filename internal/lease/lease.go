@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // ErrNoDevice means nothing idle matched the request; exit code 3 on the CLI.

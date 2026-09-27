@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/doctor"
-	"github.com/wktorbert/lean-sim/internal/lease"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/doctor"
+	"github.com/wktorbert/sthin/internal/lease"
+	"github.com/wktorbert/sthin/internal/state"
 )
 
 // SchemaVersion is bumped when a method's params or result change shape.

@@ -2,6 +2,28 @@
 
 Boot an iOS simulator or Android emulator already slimmed, from one terminal list with one key, and restore it to stock with one key.
 
+## Install
+
+Homebrew (macOS and Linux):
+
+```
+brew install wktorbert/tap/sthin
+```
+
+With Go 1.26 or newer:
+
+```
+go install github.com/wktorbert/sthin/cmd/sthin@latest
+```
+
+Or download an archive from the [releases page](https://github.com/wktorbert/sthin/releases) for macOS (arm64, amd64), Linux (amd64, arm64) or Windows (amd64), and verify it against `checksums.txt`:
+
+```
+shasum -a 256 -c --ignore-missing checksums.txt
+```
+
+Releases are cut from a `v*` tag: the desktop workflow builds and signs the app, and the same tag attaches the CLI archives, the checksum file, and updates the Homebrew tap (`scripts/release-cli.sh` and `scripts/homebrew-formula.sh` are what run there, and both work locally).
+
 ## Commands
 
 ```

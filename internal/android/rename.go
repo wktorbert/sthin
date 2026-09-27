@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // Rename implements device.Renamer: the display name lives in config.ini as

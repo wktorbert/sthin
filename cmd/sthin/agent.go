@@ -9,9 +9,9 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/lease"
-	"github.com/wktorbert/lean-sim/internal/mcpserver"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/lease"
+	"github.com/wktorbert/sthin/internal/mcpserver"
 )
 
 // Agent-facing commands: the MCP server and the lease pool.

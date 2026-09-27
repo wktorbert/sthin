@@ -14,11 +14,11 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/host"
-	"github.com/wktorbert/lean-sim/internal/lease"
-	"github.com/wktorbert/lean-sim/internal/ops"
-	"github.com/wktorbert/lean-sim/internal/project"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/host"
+	"github.com/wktorbert/sthin/internal/lease"
+	"github.com/wktorbert/sthin/internal/ops"
+	"github.com/wktorbert/sthin/internal/project"
 )
 
 // Deps is what the server needs from the host process.

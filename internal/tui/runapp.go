@@ -5,8 +5,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/project"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/project"
 )
 
 // x: run the project in Sthin's working directory on the selected device.

@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/doctor"
-	"github.com/wktorbert/lean-sim/internal/wiring"
+	"github.com/wktorbert/sthin/internal/doctor"
+	"github.com/wktorbert/sthin/internal/wiring"
 )
 
 type doctorJSON struct {

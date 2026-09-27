@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/logs"
-	"github.com/wktorbert/lean-sim/internal/ops"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/logs"
+	"github.com/wktorbert/sthin/internal/ops"
 )
 
 type logsIn struct {

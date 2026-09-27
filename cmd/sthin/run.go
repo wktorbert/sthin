@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/project"
+	"github.com/wktorbert/sthin/internal/project"
 )
 
 // newRunCmd is `sthin run`: detect the project in the current directory and

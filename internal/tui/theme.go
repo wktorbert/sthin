@@ -3,7 +3,7 @@ package tui
 import (
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // Dracula palette. lipgloss degrades these to the nearest 256/16 colour on
@@ -16,17 +16,21 @@ const (
 	draculaCyan    = lipgloss.Color("#8be9fd")
 	draculaComment = lipgloss.Color("#6272a4")
 	draculaFg      = lipgloss.Color("#f8f8f2")
+	draculaLine    = lipgloss.Color("#44475a") // "current line": selection background
 )
 
 // themeName is shown in the header, the way simutil shows "Theme: dracula".
 const themeName = "dracula"
 
 var (
-	headerStyle   = lipgloss.NewStyle().Bold(true).Foreground(draculaPurple)
-	labelStyle    = lipgloss.NewStyle().Foreground(draculaPurple) // panel titles, detail labels, OS column
-	bodyStyle     = lipgloss.NewStyle().Foreground(draculaFg)
-	dimStyle      = lipgloss.NewStyle().Foreground(draculaComment)
-	selStyle      = lipgloss.NewStyle().Reverse(true)
+	headerStyle = lipgloss.NewStyle().Bold(true).Foreground(draculaPurple)
+	labelStyle  = lipgloss.NewStyle().Foreground(draculaPurple) // panel titles, detail labels, OS column
+	bodyStyle   = lipgloss.NewStyle().Foreground(draculaFg)
+	dimStyle    = lipgloss.NewStyle().Foreground(draculaComment)
+	// selStyle marks the selection and text fields with explicit colours: bare
+	// reverse video on default colours shows an empty light bar in some
+	// terminals, hiding the text.
+	selStyle      = lipgloss.NewStyle().Foreground(draculaFg).Background(draculaLine).Bold(true)
 	okStyle       = lipgloss.NewStyle().Foreground(draculaGreen)
 	failStyle     = lipgloss.NewStyle().Foreground(draculaRed)
 	warnStyle     = lipgloss.NewStyle().Foreground(draculaYellow)

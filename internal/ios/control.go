@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/logs"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/logs"
 )
 
 // device.Controller for simulators, all through simctl.

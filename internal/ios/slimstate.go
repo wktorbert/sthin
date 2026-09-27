@@ -1,8 +1,8 @@
 package ios
 
 import (
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/profile"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/profile"
 )
 
 // minPersistVersion is the first runtime whose launchd honours the Override store across boots.

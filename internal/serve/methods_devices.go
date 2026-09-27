@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/ops"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/ops"
 )
 
 // initialize is the handshake: the client learns the schema version, the

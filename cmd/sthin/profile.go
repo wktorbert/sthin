@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/profile"
+	"github.com/wktorbert/sthin/internal/profile"
 )
 
 type profileJSON struct {

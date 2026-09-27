@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // physicalDevices lists phones adb can see over USB or Wi-Fi. They are shown

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // RuntimeVersions returns the versions of every available iOS simulator runtime.

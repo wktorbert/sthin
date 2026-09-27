@@ -10,8 +10,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/logs"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/logs"
 )
 
 // The log viewer: `l` on a device follows its log live. Lines arrive from the
@@ -218,7 +218,7 @@ func (m Model) logsLines(w, innerH int) []string {
 	}
 	filterTxt := lv.filter.Text
 	if lv.typing {
-		filterTxt = selStyle.Render(filterTxt + " ")
+		filterTxt = selStyle.Render(filterTxt + "▏")
 	} else if filterTxt == "" {
 		filterTxt = dimStyle.Render("(none)")
 	}

@@ -6,7 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // o: Android launch options for the selected AVD, saved as its preference and
@@ -123,7 +123,7 @@ func (m Model) launchLines() []string {
 	}
 	ramLine := "RAM MB: " + ram
 	if f.cursor == len(f.rows) {
-		ramLine = selStyle.Render("RAM MB: " + f.ram + " ")
+		ramLine = "RAM MB: " + selStyle.Render(f.ram+"▏")
 	}
 	lines = append(lines, ramLine, "", dimStyle.Render("space toggle · digits set RAM · enter save · esc cancel"))
 	return lines

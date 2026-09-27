@@ -11,8 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/logs"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/logs"
 )
 
 // newLogsCmd is `sthin logs`: a filtered snapshot, or a live follow until Ctrl-C.

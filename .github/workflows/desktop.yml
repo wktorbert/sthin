@@ -119,7 +119,10 @@ jobs:
           releaseDraft: true
           assetNamePattern: "[name]_[version]_${{ matrix.suffix }}[ext]"
 
-  # The same tag ships the command-line binaries next to the desktop bundles.
+  # The same tag ships the command-line binaries next to the desktop bundles:
+  # one archive per platform, a sha256 checksum file, and the Homebrew formula
+  # (pushed to wktorbert/homebrew-tap when HOMEBREW_TAP_TOKEN is set; the
+  # formula's download URLs work once the draft release is published).
   cli:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build
@@ -129,15 +132,24 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Build and attach sthin binaries
+      - name: Build archives and checksums
+        run: scripts/release-cli.sh "${GITHUB_REF_NAME#v}" dist
+      - name: Attach to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$GITHUB_REF_NAME" dist/sthin_* dist/checksums.txt --clobber
+      - name: Publish the Homebrew formula
+        if: ${{ env.HOMEBREW_TAP_TOKEN != '' }}
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           v="${GITHUB_REF_NAME#v}"
-          mkdir -p dist
-          for p in darwin/arm64 darwin/amd64 linux/amd64 windows/amd64; do
-            os="${p%/*}"; arch="${p#*/}"; ext=""; [ "$os" = windows ] && ext=".exe"
-            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
-              -ldflags "-s -w -X main.version=$v" -o "dist/sthin_${v}_${os}_${arch}${ext}" ./cmd/sthin
-          done
-          gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/wktorbert/homebrew-tap.git" tap
+          mkdir -p tap/Formula
+          scripts/homebrew-formula.sh "$v" dist/checksums.txt > tap/Formula/sthin.rb
+          cd tap
+          git config user.name "sthin release bot"
+          git config user.email "release@sthin.invalid"
+          git add Formula/sthin.rb
+          git commit -m "sthin $v" || echo "formula unchanged"
+          git push

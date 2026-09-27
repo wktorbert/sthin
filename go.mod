@@ -1,4 +1,4 @@
-module github.com/wktorbert/lean-sim
+module github.com/wktorbert/sthin
 
 go 1.26.0
 

@@ -6,7 +6,7 @@ package device
 import (
 	"context"
 	"errors"
-	"github.com/wktorbert/lean-sim/internal/logs"
+	"github.com/wktorbert/sthin/internal/logs"
 )
 
 // Platform identifies the kind of virtual device.

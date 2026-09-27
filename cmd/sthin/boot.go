@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/state"
 	"io"
 	"strings"
 
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // stagesJSON is the --json output of boot and restore.

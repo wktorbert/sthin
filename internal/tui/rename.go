@@ -5,7 +5,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/wktorbert/lean-sim/internal/device"
+	"github.com/wktorbert/sthin/internal/device"
 )
 
 // n: rename the selected simulator or AVD.
@@ -66,7 +66,7 @@ func (m Model) renameKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m Model) renameLines() []string {
 	return []string{
-		labelStyle.Render("New name") + ": " + selStyle.Render(fit(m.rename.value, 40)),
+		labelStyle.Render("New name") + ": " + selStyle.Render(fit(m.rename.value+"▏", 40)),
 		"",
 		dimStyle.Render("enter save · ctrl+u clear · esc cancel"),
 	}

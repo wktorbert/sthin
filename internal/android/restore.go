@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/state"
 )
 
 // Restore implements device.Provider: replay the Change record in reverse.

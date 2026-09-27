@@ -10,11 +10,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/host"
-	"github.com/wktorbert/lean-sim/internal/lease"
-	"github.com/wktorbert/lean-sim/internal/state"
-	"github.com/wktorbert/lean-sim/internal/wiring"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/host"
+	"github.com/wktorbert/sthin/internal/lease"
+	"github.com/wktorbert/sthin/internal/state"
+	"github.com/wktorbert/sthin/internal/wiring"
 )
 
 var version = "0.1.0-dev"

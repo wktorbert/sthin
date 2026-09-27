@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/logs"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/logs"
 )
 
 // device.Controller for emulators and physical Android devices, through adb.

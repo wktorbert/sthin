@@ -5,8 +5,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/wktorbert/lean-sim/internal/serve"
-	"github.com/wktorbert/lean-sim/internal/wiring"
+	"github.com/wktorbert/sthin/internal/serve"
+	"github.com/wktorbert/sthin/internal/wiring"
 )
 
 // newServeCmd starts the Serve session the Desktop (or any other process)

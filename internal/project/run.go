@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/host"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/host"
 )
 
 // Deps is what Run needs from the host process.

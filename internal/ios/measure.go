@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/proc"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/proc"
 )
 
 // snapshot is one host-wide view of processes: the parent tree from ps and

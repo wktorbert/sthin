@@ -9,8 +9,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/lease"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/lease"
 )
 
 // Wire format: JSON-RPC 2.0, one message per line, requests on stdin, responses

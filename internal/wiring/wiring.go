@@ -4,12 +4,12 @@
 package wiring
 
 import (
-	"github.com/wktorbert/lean-sim/internal/android"
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/doctor"
-	"github.com/wktorbert/lean-sim/internal/exec"
-	"github.com/wktorbert/lean-sim/internal/host"
-	"github.com/wktorbert/lean-sim/internal/ios"
+	"github.com/wktorbert/sthin/internal/android"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/doctor"
+	"github.com/wktorbert/sthin/internal/exec"
+	"github.com/wktorbert/sthin/internal/host"
+	"github.com/wktorbert/sthin/internal/ios"
 )
 
 // NewRegistry returns iOS then Android Providers backed by the real host.

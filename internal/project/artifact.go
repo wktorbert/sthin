@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/host"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/host"
 )
 
 // ErrNoArtifact means no built .app or .apk was found for the project.

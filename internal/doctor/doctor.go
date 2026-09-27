@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/android"
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/host"
-	"github.com/wktorbert/lean-sim/internal/ios"
-	"github.com/wktorbert/lean-sim/internal/profile"
+	"github.com/wktorbert/sthin/internal/android"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/host"
+	"github.com/wktorbert/sthin/internal/ios"
+	"github.com/wktorbert/sthin/internal/profile"
 )
 
 // Check statuses.

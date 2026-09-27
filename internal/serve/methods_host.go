@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/doctor"
-	"github.com/wktorbert/lean-sim/internal/profile"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/doctor"
+	"github.com/wktorbert/sthin/internal/profile"
 )
 
 // Host-level methods: doctor, profiles, saved preferences, leases, wireless ADB.

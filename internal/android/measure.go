@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/proc"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/proc"
 )
 
 // hostSnapshot is one ps + top sample shared across AVDs.

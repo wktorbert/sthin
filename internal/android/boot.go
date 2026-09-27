@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/state"
 )
 
 // Boot implements device.Provider: tune, launch, wait for boot, then slim the guest.

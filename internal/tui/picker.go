@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/wktorbert/lean-sim/internal/device"
-	"github.com/wktorbert/lean-sim/internal/profile"
-	"github.com/wktorbert/lean-sim/internal/state"
+	"github.com/wktorbert/sthin/internal/device"
+	"github.com/wktorbert/sthin/internal/profile"
+	"github.com/wktorbert/sthin/internal/state"
 )
 
 // The category picker: choose which Categories stay enabled on the selected
