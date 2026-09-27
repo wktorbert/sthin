@@ -34,7 +34,7 @@ func (s *Server) initialize(r *request) (any, error) {
 	}
 	return map[string]any{
 		"schema_version": SchemaVersion,
-		"lean_version":   s.Version,
+		"sthin_version":  s.Version,
 		"os":             runtime.GOOS,
 		"platforms":      platforms,
 	}, nil

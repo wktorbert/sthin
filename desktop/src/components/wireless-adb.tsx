@@ -1,5 +1,5 @@
 // Wireless ADB: pair once with the phone's code, then connect to its main
-// address. Same flow as `lean adb` and the TUI's `w`.
+// address. Same flow as `sthin adb` and the TUI's `w`.
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

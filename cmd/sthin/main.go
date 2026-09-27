@@ -1,4 +1,4 @@
-// Command lean boots iOS simulators and Android emulators already slimmed and
+// Command sthin boots iOS simulators and Android emulators already slimmed and
 // restores them to stock.
 package main
 
@@ -44,16 +44,16 @@ type app struct {
 // requireVirtual rejects physical devices for operations that modify a device.
 func requireVirtual(d device.Device, op string) error {
 	if d.Kind == device.Physical {
-		return usageErr("%s is a physical device; Lean never modifies physical devices (%s refused)", d.Name, op)
+		return usageErr("%s is a physical device; Sthin never modifies physical devices (%s refused)", d.Name, op)
 	}
 	return nil
 }
 
 func newRootCmd(a *app) *cobra.Command {
 	root := &cobra.Command{
-		Use:           "lean",
+		Use:           "sthin",
 		Short:         "Boot iOS simulators and Android emulators already slimmed",
-		Long:          "Lean boots iOS simulators and Android emulators already slimmed, from one list,\nand restores them to stock with one command.\n\nExit codes: 0 success, 1 failure, 2 usage error or unknown device, 3 no device available to lease.",
+		Long:          "Sthin boots iOS simulators and Android emulators already slimmed, from one list,\nand restores them to stock with one command.\n\nExit codes: 0 success, 1 failure, 2 usage error or unknown device, 3 no device available to lease.",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		Args:          cobra.NoArgs,
@@ -71,6 +71,7 @@ func newRootCmd(a *app) *cobra.Command {
 		newAdbCmd(a),
 		newRunCmd(a),
 		newLogsCmd(a),
+		newRenameCmd(a),
 		newMCPCmd(a),
 		newServeCmd(a),
 		newLeaseCmd(a),
@@ -82,7 +83,7 @@ func newRootCmd(a *app) *cobra.Command {
 			Use:   "version",
 			Short: "Print the version",
 			Args:  cobra.NoArgs,
-			Run:   func(cmd *cobra.Command, _ []string) { fmt.Fprintln(cmd.OutOrStdout(), "lean", version) },
+			Run:   func(cmd *cobra.Command, _ []string) { fmt.Fprintln(cmd.OutOrStdout(), "sthin", version) },
 		},
 	)
 	return root
@@ -120,7 +121,7 @@ func main() {
 	if err != nil {
 		var ee *exitError
 		if !errors.As(err, &ee) || ee.err != nil {
-			fmt.Fprintln(os.Stderr, "lean:", err)
+			fmt.Fprintln(os.Stderr, "sthin:", err)
 		}
 	}
 	os.Exit(exitCode(err))

@@ -15,7 +15,8 @@ import (
 const (
 	defaultPoll       = time.Second
 	launchdWaitCap    = 120 * time.Second
-	missingTolerance  = 0.10 // readback may miss up to 10 % of Lean's labels before the fallback runs
+	missingTolerance  = 0.10 // readback may miss up to 10 % of Sthin's labels before the fallback runs
+	stageRename       = "rename"
 	stageCheckRuntime = "check-runtime"
 	stageWrite        = "write-overrides"
 	stageBoot         = "boot"
@@ -116,6 +117,14 @@ func (p *Provider) Boot(ctx context.Context, udid string, opts device.BootOption
 	s, err := p.find(ctx, udid)
 	if err != nil {
 		return err
+	}
+	if opts.Name != "" {
+		if err := (device.Stages{R: r}).Do(stageRename, func() (string, error) {
+			return opts.Name, p.Rename(ctx, udid, opts.Name)
+		}); err != nil {
+			return err
+		}
+		s.Name = opts.Name
 	}
 	prof := p.profile()
 	except, err := p.State.ExceptFor(udid, opts.Except)
@@ -219,8 +228,8 @@ func (p *Provider) writeOverrides(ctx context.Context, udid string, booted bool,
 			toDisable = append(toDisable, l)
 		}
 	}
-	// Labels Lean disabled earlier that the current selection keeps (a category
-	// newly excepted) are switched back on; labels Lean never touched are not.
+	// Labels Sthin disabled earlier that the current selection keeps (a category
+	// newly excepted) are switched back on; labels Sthin never touched are not.
 	var toEnable []string
 	for _, l := range rec.Disabled {
 		if !want[l] && cur[l] {

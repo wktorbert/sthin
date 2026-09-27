@@ -83,7 +83,7 @@ func (c *stageCollector) finish(cmd *cobra.Command, d device.Device, asJSON bool
 
 func newBootCmd(a *app) *cobra.Command {
 	var opts device.BootOptions
-	var asJSON, remember bool
+	var asJSON, remember, coldBoot, audio, lowRAM bool
 	cmd := &cobra.Command{
 		Use:   "boot <id|name>",
 		Short: "Boot a device slimmed (or stock with --stock)",
@@ -112,12 +112,33 @@ func newBootCmd(a *app) *cobra.Command {
 			} else {
 				opts.Except = nil
 			}
+			// Launch switches: only flags that were passed become explicit; the
+			// rest come from the AVD's saved preference.
+			if cmd.Flags().Changed("cold-boot") {
+				opts.Launch.ColdBoot = device.BoolPtr(coldBoot)
+			}
+			if cmd.Flags().Changed("audio") {
+				opts.Launch.Audio = device.BoolPtr(audio)
+			}
+			if cmd.Flags().Changed("lowram") {
+				opts.Launch.LowRAM = device.BoolPtr(lowRAM)
+			}
+			if cmd.Flags().Changed("headless") {
+				opts.Launch.Headless = device.BoolPtr(opts.Headless)
+			}
+			if cmd.Flags().Changed("ram") {
+				opts.Launch.RAMMB = device.IntPtr(opts.RAMMB)
+			}
 			if remember {
-				if opts.Except == nil {
-					opts.Except = []string{}
+				if cmd.Flags().Changed("except") {
+					if err := a.prefs.SavePrefs(state.Prefs{ID: d.ID, Except: opts.Except}); err != nil {
+						return err
+					}
 				}
-				if err := a.prefs.SavePrefs(state.Prefs{ID: d.ID, Except: opts.Except}); err != nil {
-					return err
+				if !opts.Launch.IsZero() {
+					if err := a.prefs.MergeLaunch(d.ID, opts.Launch); err != nil {
+						return err
+					}
 				}
 			}
 			c := &stageCollector{errw: cmd.ErrOrStderr(), quiet: asJSON}
@@ -132,12 +153,16 @@ func newBootCmd(a *app) *cobra.Command {
 			return c.finish(cmd, d, asJSON, err)
 		},
 	}
-	cmd.Flags().BoolVar(&opts.Stock, "stock", false, "boot without slimming (restores first if Lean changed the device)")
-	cmd.Flags().StringSliceVar(&opts.Except, "except", nil, "`categories` to leave enabled, comma-separated IDs from lean profile")
+	cmd.Flags().BoolVar(&opts.Stock, "stock", false, "boot without slimming (restores first if Sthin changed the device)")
+	cmd.Flags().StringSliceVar(&opts.Except, "except", nil, "`categories` to leave enabled, comma-separated IDs from sthin profile")
 	cmd.Flags().IntVar(&opts.RAMMB, "ram", 0, "Android guest RAM in MB (default 1024)")
 	cmd.Flags().BoolVar(&opts.Headless, "headless", false, "do not open a window (no Simulator.app; emulator -no-window)")
 	cmd.Flags().Bool("wait", true, "block until the device is ready (always on; kept for scripts)")
-	cmd.Flags().BoolVar(&remember, "remember", false, "save --except as this device's default for later boots (TUI Enter, lean boot without --except)")
+	cmd.Flags().StringVar(&opts.Name, "name", "", "rename the device before booting (simctl rename / avd.ini.displayname)")
+	cmd.Flags().BoolVar(&coldBoot, "cold-boot", false, "Android: ignore the quick-boot snapshot (-no-snapshot-load)")
+	cmd.Flags().BoolVar(&audio, "audio", false, "Android: keep audio on (default off)")
+	cmd.Flags().BoolVar(&lowRAM, "lowram", false, "Android: pass -lowram (off by default; some images fail to boot with it)")
+	cmd.Flags().BoolVar(&remember, "remember", false, "save the --except and Android launch flags given here as this device's defaults for later boots")
 	cmd.Flags().BoolVar(&asJSON, "json", false, "print JSON")
 	return cmd
 }
@@ -146,7 +171,7 @@ func newRestoreCmd(a *app) *cobra.Command {
 	var asJSON bool
 	cmd := &cobra.Command{
 		Use:   "restore <id|name>",
-		Short: "Undo everything Lean changed on a device",
+		Short: "Undo everything Sthin changed on a device",
 		Args:  exactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			p, d, err := a.reg.Resolve(a.ctx, args[0])

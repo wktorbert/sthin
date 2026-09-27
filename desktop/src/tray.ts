@@ -5,7 +5,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { Menu, MenuItem, PredefinedMenuItem, Submenu } from "@tauri-apps/api/menu";
 import { TrayIcon } from "@tauri-apps/api/tray";
 import { parseTrayAction, trayModel, type TrayEntry } from "@/lib/tray-model";
-import { bootDevice, restoreDevice, select, setView, shutdownDevice, useLean } from "@/store";
+import { bootDevice, restoreDevice, select, setView, shutdownDevice, useSthin } from "@/store";
 
 export async function bindTray(): Promise<void> {
   const tray = await TrayIcon.getById("main");
@@ -18,7 +18,7 @@ export async function bindTray(): Promise<void> {
     queue = queue.then(render).catch(() => undefined);
   };
   const render = async () => {
-    const s = useLean.getState();
+    const s = useSthin.getState();
     const busy = new Set(Object.entries(s.ops).filter(([, op]) => op.running).map(([id]) => id));
     const model = s.phase === "ready" ? trayModel(s.platforms, s.devices, busy) : trayModel([], [], busy);
     const key = JSON.stringify(model);
@@ -26,7 +26,7 @@ export async function bindTray(): Promise<void> {
     await tray.setMenu(await build(model));
     last = key;
   };
-  useLean.subscribe(schedule);
+  useSthin.subscribe(schedule);
   schedule();
   await queue;
 }

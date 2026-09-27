@@ -84,8 +84,8 @@ func runList(a *app, out, errw io.Writer, asJSON bool) error {
 	return nil
 }
 
-// runDefault is `lean` with no arguments: the TUI when stdin and stdout are a
-// terminal, otherwise the same output as `lean list`.
+// runDefault is `sthin` with no arguments: the TUI when stdin and stdout are a
+// terminal, otherwise the same output as `sthin list`.
 func runDefault(a *app, cmd *cobra.Command) error {
 	if !term.IsTerminal(int(os.Stdout.Fd())) || !term.IsTerminal(int(os.Stdin.Fd())) {
 		return runList(a, cmd.OutOrStdout(), cmd.ErrOrStderr(), false)

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Minimal `lean serve` stdio client for smoke tests: speaks the same
+"""Minimal `sthin serve` stdio client for smoke tests: speaks the same
 newline-delimited JSON-RPC 2.0 the desktop app does.
 
-Usage: serve-client.py <lean-binary> <method> [json-params] [<method> [json-params] ...]
+Usage: serve-client.py <sthin-binary> <method> [json-params] [<method> [json-params] ...]
 Always calls `initialize` first. Prints one JSON object per call:
 {"method": ..., "result": ...} or {"method": ..., "error": ...}.
 Notifications that arrive meanwhile are printed as {"notification": ..., "params": ...}.

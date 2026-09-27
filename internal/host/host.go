@@ -1,5 +1,5 @@
 // Package host discovers the platform toolchains (xcrun, emulator, adb) and
-// Lean's own directories. Everything that touches the environment is behind
+// Sthin's own directories. Everything that touches the environment is behind
 // Env so tests can fake it.
 package host
 
@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-// Env is the view of the host Lean needs.
+// Env is the view of the host Sthin needs.
 type Env struct {
 	GOOS     string
 	Getenv   func(string) string
@@ -156,10 +156,13 @@ func (e Env) AVDHome() string {
 	return filepath.Join(e.HomeDir, ".android", "avd")
 }
 
-// LeanHome is $LEAN_HOME or ~/.lean.
-func (e Env) LeanHome() string {
-	if v := e.Getenv("LEAN_HOME"); v != "" {
+// SthinHome is $STHIN_HOME or ~/.sthin.
+func (e Env) SthinHome() string {
+	if v := e.Getenv("STHIN_HOME"); v != "" {
 		return v
 	}
-	return filepath.Join(e.HomeDir, ".lean")
+	if v := e.Getenv("LEAN_HOME"); v != "" { // pre-rename variable
+		return v
+	}
+	return filepath.Join(e.HomeDir, ".sthin")
 }

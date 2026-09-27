@@ -1,4 +1,4 @@
-# iOS Profile: launchd labels Lean disables in a simulator.
+# iOS Profile: launchd labels Sthin disables in a simulator.
 # Labels seeded from simslim (MobAI-App, MIT); see NOTICE.
 platform: ios
 version: 1

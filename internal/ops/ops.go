@@ -20,7 +20,7 @@ func ResolveVirtual(ctx context.Context, reg *device.Registry, id, op string) (d
 		return nil, device.Device{}, err
 	}
 	if d.Kind == device.Physical {
-		return nil, device.Device{}, fmt.Errorf("%w: %s is a physical device; Lean never modifies physical devices (%s refused)", device.ErrUsage, d.Name, op)
+		return nil, device.Device{}, fmt.Errorf("%w: %s is a physical device; Sthin never modifies physical devices (%s refused)", device.ErrUsage, d.Name, op)
 	}
 	return p, d, nil
 }

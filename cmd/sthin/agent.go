@@ -21,8 +21,8 @@ func (a *app) pool() lease.Pool { return lease.Pool{Home: a.prefs.Home} }
 func newMCPCmd(a *app) *cobra.Command {
 	return &cobra.Command{
 		Use:   "mcp",
-		Short: "Serve Lean's operations to agents over MCP (stdio)",
-		Long:  "Runs a Model Context Protocol server on stdin/stdout. Register it in an agent's MCP config as `lean mcp`. Every tool uses the same code path as the CLI and TUI.",
+		Short: "Serve Sthin's operations to agents over MCP (stdio)",
+		Long:  "Runs a Model Context Protocol server on stdin/stdout. Register it in an agent's MCP config as `sthin mcp`. Every tool uses the same code path as the CLI and TUI.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			s := mcpserver.New(mcpserver.Deps{Reg: a.reg, Pool: a.pool(), Version: version, Run: a.run, Env: a.env})

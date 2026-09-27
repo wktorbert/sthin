@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# build-sidecar.sh — build the `lean` binary the desktop app bundles as its
-# sidecar, into desktop/src-tauri/binaries/lean-<target-triple>[.exe] as Tauri's
+# build-sidecar.sh — build the `sthin` binary the desktop app bundles as its
+# sidecar, into desktop/src-tauri/binaries/sthin-<target-triple>[.exe] as Tauri's
 # externalBin requires (https://v2.tauri.app/develop/sidecar/).
 #
 # The version comes from desktop/src-tauri/tauri.conf.json and is stamped into
@@ -41,8 +41,8 @@ for t in "${triples[@]}"; do
   read -r goos goarch < <(goos_goarch "$t")
   ext=""
   [ "$goos" = "windows" ] && ext=".exe"
-  dest="$out/lean-$t$ext"
+  dest="$out/sthin-$t$ext"
   CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
-    go build -trimpath -ldflags "-s -w -X main.version=$version" -o "$dest" ./cmd/lean
+    go build -trimpath -ldflags "-s -w -X main.version=$version" -o "$dest" ./cmd/sthin
   echo "built $dest ($version)"
 done

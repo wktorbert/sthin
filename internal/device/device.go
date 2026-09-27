@@ -1,4 +1,4 @@
-// Package device defines the platform-neutral model Lean works with: Devices,
+// Package device defines the platform-neutral model Sthin works with: Devices,
 // the Provider seam each platform implements, and the Runner seam through which
 // Providers execute host commands.
 package device
@@ -37,7 +37,7 @@ const (
 	NotApplicable SlimState = "n/a" // physical devices are never slimmed
 )
 
-// Device is one iOS simulator or Android virtual device as Lean lists it.
+// Device is one iOS simulator or Android virtual device as Sthin lists it.
 // Kind says what a Device physically is. Physical devices are listed and
 // used, never slimmed or otherwise modified.
 type Kind string
@@ -73,10 +73,76 @@ type Device struct {
 type BootOptions struct {
 	Stock  bool
 	Except []string // Category IDs to leave enabled; nil means the device's saved preference
-	RAMMB  int      // Android only; 0 means the default
+	RAMMB  int      // Android only; 0 means the default (or the saved preference)
 	// Headless skips the window: no Simulator.app on iOS, -no-window on Android.
 	Headless bool
+	// Launch holds the Android emulator switches for this boot. A nil field
+	// means "use the AVD's saved preference, else the default".
+	Launch LaunchOptions
+	// Name, when set, renames the device before it boots so the window and
+	// the list show the new name from the start.
+	Name string
 }
+
+// Renamer is the optional seam for renaming a virtual device: simctl rename on
+// iOS, avd.ini.displayname on Android. Physical devices are never renamed.
+type Renamer interface {
+	Rename(ctx context.Context, id, name string) error
+}
+
+// LaunchOptions are the emulator switches a user chooses per AVD (PRD R3.3).
+// Pointers distinguish "not given" from false so an explicit flag overrides
+// the saved preference field by field.
+type LaunchOptions struct {
+	ColdBoot *bool `json:"cold_boot,omitempty"` // -no-snapshot-load: ignore the quick-boot snapshot
+	Audio    *bool `json:"audio,omitempty"`     // keep audio on (default off)
+	LowRAM   *bool `json:"lowram,omitempty"`    // pass -lowram (default off: some images fail to load initrd with it)
+	Headless *bool `json:"headless,omitempty"`  // -no-window
+	RAMMB    *int  `json:"ram_mb,omitempty"`    // guest RAM
+}
+
+// Merge returns l with every non-nil field of o applied on top.
+func (l LaunchOptions) Merge(o LaunchOptions) LaunchOptions {
+	if o.ColdBoot != nil {
+		l.ColdBoot = o.ColdBoot
+	}
+	if o.Audio != nil {
+		l.Audio = o.Audio
+	}
+	if o.LowRAM != nil {
+		l.LowRAM = o.LowRAM
+	}
+	if o.Headless != nil {
+		l.Headless = o.Headless
+	}
+	if o.RAMMB != nil {
+		l.RAMMB = o.RAMMB
+	}
+	return l
+}
+
+// IsZero reports whether no field is set.
+func (l LaunchOptions) IsZero() bool {
+	return l.ColdBoot == nil && l.Audio == nil && l.LowRAM == nil && l.Headless == nil && l.RAMMB == nil
+}
+
+// Bool and Int read a pointer field with a default.
+func Bool(p *bool, def bool) bool {
+	if p == nil {
+		return def
+	}
+	return *p
+}
+func Int(p *int, def int) int {
+	if p == nil {
+		return def
+	}
+	return *p
+}
+
+// Ptr helpers for building LaunchOptions.
+func BoolPtr(b bool) *bool { return &b }
+func IntPtr(i int) *int    { return &i }
 
 // Stage status values reported through a Reporter.
 const (
@@ -170,7 +236,7 @@ func (e *StageError) Error() string {
 
 func (e *StageError) Unwrap() error { return e.Err }
 
-// Runner executes host commands. It is the only way Lean spawns a process.
+// Runner executes host commands. It is the only way Sthin spawns a process.
 type Runner interface {
 	// Run executes name with args and returns stdout and stderr.
 	Run(ctx context.Context, name string, args ...string) (stdout, stderr []byte, err error)

@@ -161,7 +161,7 @@ func (m Model) logsKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// saveLogs writes the filtered buffer to $LEAN_HOME/logs/<id>-<time>.log.
+// saveLogs writes the filtered buffer to $STHIN_HOME/logs/<id>-<time>.log.
 func (m Model) saveLogs() (string, error) {
 	lv := m.logs
 	lines, _ := lv.ring.Snapshot(lv.filter)

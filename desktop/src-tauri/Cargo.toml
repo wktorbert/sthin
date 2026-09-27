@@ -1,12 +1,12 @@
 [package]
-name = "lean-desktop"
+name = "sthin-desktop"
 version = "0.1.0"
-description = "Lean desktop app: a thin client over `lean serve`"
+description = "Sthin desktop app: a thin client over `sthin serve`"
 edition = "2021"
 publish = false
 
 [lib]
-name = "lean_desktop_lib"
+name = "sthin_desktop_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

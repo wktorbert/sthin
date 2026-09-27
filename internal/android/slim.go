@@ -111,7 +111,7 @@ func (p *Provider) disablePackages(ctx context.Context, serial string, desired [
 		disabled++
 		rec.Disabled = union(rec.Disabled, []string{pkg})
 	}
-	// Packages Lean disabled earlier that the current selection keeps (a
+	// Packages Sthin disabled earlier that the current selection keeps (a
 	// category newly excepted) are switched back on and dropped from the record.
 	want := map[string]bool{}
 	for _, pkg := range desired {

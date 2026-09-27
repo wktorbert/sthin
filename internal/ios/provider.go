@@ -35,7 +35,7 @@ func New(run device.Runner, env host.Env) *Provider {
 		Env:          env,
 		OverrideRoot: "/private/var/tmp",
 		Profile:      profile.MustLoad("ios"),
-		State:        state.Store{Home: env.LeanHome()},
+		State:        state.Store{Home: env.SthinHome()},
 	}
 }
 

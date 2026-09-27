@@ -9,15 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { matches } from "@/lib/log-buffer";
 import { cn } from "@/lib/utils";
 import { Level, type LogLine } from "@/serve/protocol";
-import { clearLog, closeLogs, updateLog, useLean } from "@/store";
+import { clearLog, closeLogs, updateLog, useSthin } from "@/store";
 
 const RENDERED = 2000;
 const levelNames = ["verbose", "debug", "info", "warn", "error", "fatal"];
 const levelTone = ["text-muted-foreground", "text-muted-foreground", "", "text-warning", "text-destructive", "text-pink"];
 
 export function LogsView() {
-  const log = useLean((s) => s.log);
-  const name = useLean((s) => s.devices.find((d) => d.id === s.log?.deviceId)?.name);
+  const log = useSthin((s) => s.log);
+  const name = useSthin((s) => s.devices.find((d) => d.id === s.log?.deviceId)?.name);
   const bottom = useRef<HTMLDivElement>(null);
 
   const shown = useMemo(() => {

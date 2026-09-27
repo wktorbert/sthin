@@ -1,5 +1,5 @@
 // Package profile loads the embedded per-platform Profiles: which Managed items
-// Lean disables, grouped into Categories, plus the Never-disable set and the
+// Sthin disables, grouped into Categories, plus the Never-disable set and the
 // runtime each Profile was validated against.
 package profile
 

@@ -1,4 +1,4 @@
-//! Lean desktop: a window plus a Tray over the bundled `lean serve` sidecar.
+//! Sthin desktop: a window plus a Tray over the bundled `sthin serve` sidecar.
 //! Rust's job is process ownership and window lifecycle; the Tray menu and all
 //! device logic live in the frontend and in Go.
 
@@ -73,14 +73,14 @@ pub fn run() {
             TrayIconBuilder::with_id("main")
                 .icon(icon)
                 .icon_as_template(true)
-                .tooltip("Lean")
+                .tooltip("Sthin")
                 .show_menu_on_left_click(true)
                 .build(app)?;
             Sidecar::start(app.handle());
             Ok(())
         })
         .on_window_event(|window, event| {
-            // Closing the window hides it; Lean keeps running in the Tray.
+            // Closing the window hides it; Sthin keeps running in the Tray.
             if let WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == "main" {
                     api.prevent_close();
@@ -89,7 +89,7 @@ pub fn run() {
             }
         })
         .build(tauri::generate_context!())
-        .expect("error while building the Lean desktop app");
+        .expect("error while building the Sthin desktop app");
 
     app.run(|app, event| match event {
         // macOS: clicking the Dock icon brings the hidden window back.

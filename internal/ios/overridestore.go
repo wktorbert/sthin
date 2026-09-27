@@ -62,7 +62,7 @@ func (s overrideStore) Write(toDisable, toEnable []string) error {
 	if err := os.MkdirAll(filepath.Dir(s.path), 0o755); err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(filepath.Dir(s.path), ".disabled.plist.lean-*")
+	tmp, err := os.CreateTemp(filepath.Dir(s.path), ".disabled.plist.sthin-*")
 	if err != nil {
 		return err
 	}

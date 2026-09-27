@@ -42,7 +42,7 @@ echo "── unit ────────────────────�
 check "AC2 go test"              go test ./... -count=1
 
 echo "── build ──────────────────────────────────"
-check "AC3 build darwin"         go build -o bin/lean ./cmd/lean
+check "AC3 build darwin"         go build -o bin/sthin ./cmd/sthin
 linux_build() { GOOS=linux GOARCH=amd64 go build ./...; }
 check "AC3 build linux"          linux_build
 windows_build() { GOOS=windows GOARCH=amd64 go build ./...; }
@@ -50,11 +50,11 @@ check "AC3 build windows"        windows_build
 
 echo "── smoke ──────────────────────────────────"
 help_lists_commands() {
-  local out; out="$(bin/lean --help)" || return 1
+  local out; out="$(bin/sthin --help)" || return 1
   for c in list boot restore shutdown measure doctor profile version run logs mcp serve lease release leases adb; do
     grep -qE "^\s+$c\b" <<<"$out" || { echo "missing subcommand: $c"; return 1; }
   done
-  out="$(bin/lean boot --help)" || return 1
+  out="$(bin/sthin boot --help)" || return 1
   for f in --stock --except --ram; do
     grep -q -- "$f" <<<"$out" || { echo "boot --help missing $f"; return 1; }
   done
@@ -62,7 +62,7 @@ help_lists_commands() {
 check "AC4 help lists commands"  help_lists_commands
 
 list_json() {
-  bin/lean list --json > /tmp/oneshot-list.json || return 1
+  bin/sthin list --json > /tmp/oneshot-list.json || return 1
   python3 - <<'PY'
 import json,sys
 d=json.load(open("/tmp/oneshot-list.json"))
@@ -83,7 +83,7 @@ check "AC5 list --json"          list_json
 
 profile_json() {
   for p in ios android; do
-    bin/lean profile "$p" --json > "/tmp/oneshot-profile-$p.json" || return 1
+    bin/sthin profile "$p" --json > "/tmp/oneshot-profile-$p.json" || return 1
   done
   python3 - <<'PY'
 import json
@@ -104,7 +104,7 @@ PY
 check "AC6 profile --json"       profile_json
 
 doctor_json() {
-  bin/lean doctor --json > /tmp/oneshot-doctor.json
+  bin/sthin doctor --json > /tmp/oneshot-doctor.json
   local rc=$?
   python3 - <<'PY'
 import json
@@ -122,14 +122,14 @@ check "AC7 doctor --json"        doctor_json
 
 measure_shutdown_exit2() {
   local udid
-  bin/lean list --json > /tmp/oneshot-list-ac8.json || { echo "list --json failed"; return 1; }
+  bin/sthin list --json > /tmp/oneshot-list-ac8.json || { echo "list --json failed"; return 1; }
   udid="$(python3 -c '
 import json
 d=json.load(open("/tmp/oneshot-list-ac8.json"))
 x=[v for v in d["devices"] if v["platform"]=="ios" and v["state"]=="shutdown"]
 print(x[0]["id"] if x else "")')"
   [ -n "$udid" ] || { echo "no shutdown ios device to test against"; return 1; }
-  bin/lean measure "$udid" >/tmp/oneshot-measure.out 2>&1
+  bin/sthin measure "$udid" >/tmp/oneshot-measure.out 2>&1
   local rc=$?
   cat /tmp/oneshot-measure.out
   [ $rc -eq 2 ] || { echo "expected exit 2, got $rc"; return 1; }
@@ -147,9 +147,9 @@ tui_tests_exist() {
   for t in TestRendersBothPlatforms TestHelpOverlay TestRestoreConfirm TestEnterBootsAndShowsEachStage; do
     grep -qE "^--- PASS: $t " /tmp/oneshot-tui.out || { echo "AC9 test not passing: $t"; return 1; }
   done
-  # non-TTY fallback: `lean` with piped stdout behaves like `lean list`
-  bin/lean </dev/null >/tmp/oneshot-lean-notty.out 2>&1 || { echo "bare lean exited non-zero without a TTY"; return 1; }
-  grep -qiE 'ios|android' /tmp/oneshot-lean-notty.out
+  # non-TTY fallback: `sthin` with piped stdout behaves like `sthin list`
+  bin/sthin </dev/null >/tmp/oneshot-sthin-notty.out 2>&1 || { echo "bare sthin exited non-zero without a TTY"; return 1; }
+  grep -qiE 'ios|android' /tmp/oneshot-sthin-notty.out
 }
 check "AC9 tui model tests + non-tty fallback" tui_tests_exist
 
@@ -162,7 +162,7 @@ check "AC10 marker unique"       marker_unique
 
 mcp_smoke() {
   # Speak MCP over stdio to the real binary: handshake, tool list, one read-only call.
-  python3 scripts/mcp-client.py bin/lean devices_list > /tmp/oneshot-mcp.out || { cat /tmp/oneshot-mcp.out; return 1; }
+  python3 scripts/mcp-client.py bin/sthin devices_list > /tmp/oneshot-mcp.out || { cat /tmp/oneshot-mcp.out; return 1; }
   python3 - <<'PYCHECK'
 import json
 lines=[json.loads(l) for l in open("/tmp/oneshot-mcp.out") if l.strip()]
@@ -181,8 +181,8 @@ check "AC12 mcp stdio smoke"     mcp_smoke
 serve_smoke() {
   # Speak the desktop app's protocol to the real binary: initialize, then a
   # read-only listing, doctor, and one usage error that must map to code 2.
-  python3 scripts/serve-client.py bin/lean devices_list doctor > /tmp/oneshot-serve.out || { cat /tmp/oneshot-serve.out; return 1; }
-  python3 scripts/serve-client.py bin/lean boot '{"id":"no-such-device-lean-verify"}' > /tmp/oneshot-serve-err.out
+  python3 scripts/serve-client.py bin/sthin devices_list doctor > /tmp/oneshot-serve.out || { cat /tmp/oneshot-serve.out; return 1; }
+  python3 scripts/serve-client.py bin/sthin boot '{"id":"no-such-device-sthin-verify"}' > /tmp/oneshot-serve-err.out
   python3 - <<'PYCHECK'
 import json
 calls={}
@@ -190,7 +190,7 @@ for l in open("/tmp/oneshot-serve.out"):
     m=json.loads(l)
     if "method" in m: calls[m["method"]]=m
 init=calls["initialize"]["result"]
-assert init["schema_version"]==1 and init["lean_version"], init
+assert init["schema_version"]==1 and init["sthin_version"], init
 assert {p["platform"] for p in init["platforms"]}=={"ios","android"}, init
 d=calls["devices_list"]["result"]
 assert d["schema_version"]==1 and any(x["platform"]=="ios" for x in d["devices"]), d

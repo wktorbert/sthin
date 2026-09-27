@@ -115,7 +115,7 @@ jobs:
           tauriScript: pnpm tauri
           args: --target ${{ matrix.target }}
           tagName: ${{ github.ref_name }}
-          releaseName: Lean ${{ github.ref_name }}
+          releaseName: Sthin ${{ github.ref_name }}
           releaseDraft: true
           assetNamePattern: "[name]_[version]_${{ matrix.suffix }}[ext]"
 
@@ -129,7 +129,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: Build and attach lean binaries
+      - name: Build and attach sthin binaries
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -138,6 +138,6 @@ jobs:
           for p in darwin/arm64 darwin/amd64 linux/amd64 windows/amd64; do
             os="${p%/*}"; arch="${p#*/}"; ext=""; [ "$os" = windows ] && ext=".exe"
             CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
-              -ldflags "-s -w -X main.version=$v" -o "dist/lean_${v}_${os}_${arch}${ext}" ./cmd/lean
+              -ldflags "-s -w -X main.version=$v" -o "dist/sthin_${v}_${os}_${arch}${ext}" ./cmd/sthin
           done
           gh release upload "$GITHUB_REF_NAME" dist/* --clobber

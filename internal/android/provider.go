@@ -21,14 +21,14 @@ import (
 
 // Provider implements device.Provider for AVDs.
 type Provider struct {
-	Run      device.Runner
-	Env      host.Env
-	AVDHome  string
-	Adb      string // path to adb, "" when not found
-	Emulator string // path to emulator, "" when not found
-	LeanHome string
-	Profile  *profile.Profile
-	State    state.Store
+	Run       device.Runner
+	Env       host.Env
+	AVDHome   string
+	Adb       string // path to adb, "" when not found
+	Emulator  string // path to emulator, "" when not found
+	SthinHome string
+	Profile   *profile.Profile
+	State     state.Store
 
 	PollInterval time.Duration // between boot polls; default 2 s
 	WaitCap      time.Duration // boot wait cap; default 180 s
@@ -42,8 +42,8 @@ func New(run device.Runner, env host.Env) *Provider {
 	adb, _ := env.Adb()
 	emu, _ := env.Emulator()
 	return &Provider{
-		Run: run, Env: env, AVDHome: env.AVDHome(), Adb: adb, Emulator: emu, LeanHome: env.LeanHome(),
-		Profile: profile.MustLoad("android"), State: state.Store{Home: env.LeanHome()},
+		Run: run, Env: env, AVDHome: env.AVDHome(), Adb: adb, Emulator: emu, SthinHome: env.SthinHome(),
+		Profile: profile.MustLoad("android"), State: state.Store{Home: env.SthinHome()},
 	}
 }
 

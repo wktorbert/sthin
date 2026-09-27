@@ -1,4 +1,4 @@
-// Package state persists Change records: exactly what Lean disabled and every
+// Package state persists Change records: exactly what Sthin disabled and every
 // setting it changed on a Device, so Restore can replay it and nothing else.
 package state
 
@@ -36,13 +36,16 @@ type Store struct {
 	Home string
 }
 
-// Default returns the Store at $LEAN_HOME (or ~/.lean).
+// Default returns the Store at $STHIN_HOME (or ~/.sthin).
 func Default() Store {
-	if h := os.Getenv("LEAN_HOME"); h != "" {
+	if h := os.Getenv("STHIN_HOME"); h != "" {
+		return Store{Home: h}
+	}
+	if h := os.Getenv("LEAN_HOME"); h != "" { // the pre-rename variable still works
 		return Store{Home: h}
 	}
 	home, _ := os.UserHomeDir()
-	return Store{Home: filepath.Join(home, ".lean")}
+	return Store{Home: MigrateLegacyHome(home)}
 }
 
 var unsafe = regexp.MustCompile(`[^A-Za-z0-9._-]`)
@@ -90,4 +93,19 @@ func (s Store) Delete(id string) error {
 		return nil
 	}
 	return err
+}
+
+// MigrateLegacyHome returns ~/.sthin, first renaming a pre-rename ~/.lean to
+// it when ~/.sthin does not exist yet, so saved preferences, change records
+// and leases survive the product rename. Any failure leaves both as they are.
+func MigrateLegacyHome(home string) string {
+	newDir := filepath.Join(home, ".sthin")
+	oldDir := filepath.Join(home, ".lean")
+	if _, err := os.Stat(newDir); err == nil {
+		return newDir
+	}
+	if st, err := os.Stat(oldDir); err == nil && st.IsDir() {
+		_ = os.Rename(oldDir, newDir)
+	}
+	return newDir
 }

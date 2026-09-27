@@ -1,7 +1,7 @@
 // Package lease is the device pool for agents: a device is leased for a TTL,
 // used, and released; an expired lease frees the device even if the agent
-// that held it crashed. Leases are files under $LEAN_HOME/leases, one per
-// device, so every Lean process on the host sees the same pool.
+// that held it crashed. Leases are files under $STHIN_HOME/leases, one per
+// device, so every Sthin process on the host sees the same pool.
 package lease
 
 import (

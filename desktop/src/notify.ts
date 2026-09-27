@@ -19,6 +19,6 @@ export async function notifyDone(kind: "boot" | "restore", name: string, error?:
   sendNotification(
     error
       ? { title: `${verb} failed: ${name}`, body: error }
-      : { title: kind === "boot" ? `${name} is ready` : `${name} restored to stock`, body: kind === "boot" ? "Slim boot finished." : "Everything Lean changed was undone." },
+      : { title: kind === "boot" ? `${name} is ready` : `${name} restored to stock`, body: kind === "boot" ? "Slim boot finished." : "Everything Sthin changed was undone." },
   );
 }

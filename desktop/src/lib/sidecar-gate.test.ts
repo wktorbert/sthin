@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { Initialize } from "@/serve/protocol";
 import { checkSidecar } from "./sidecar-gate";
 
-const init = (lean_version: string, schema_version = 1): Initialize => ({
+const init = (sthin_version: string, schema_version = 1): Initialize => ({
   schema_version,
-  lean_version,
+  sthin_version,
   os: "darwin",
   platforms: [],
 });
@@ -14,7 +14,7 @@ describe("checkSidecar", () => {
     expect(checkSidecar("0.2.0", init("0.2.0"))).toEqual({ ok: true });
   });
 
-  it("refuses a different Lean version and names both", () => {
+  it("refuses a different Sthin version and names both", () => {
     const r = checkSidecar("0.2.0", init("0.1.9"));
     expect(r.ok).toBe(false);
     expect(!r.ok && r.reason).toContain("0.2.0");

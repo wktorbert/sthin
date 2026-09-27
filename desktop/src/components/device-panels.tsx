@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Panel } from "@/lib/device-panels";
 import type { Device } from "@/serve/protocol";
-import { select, useLean } from "@/store";
+import { select, useSthin } from "@/store";
 
 export function DevicePanels({ panels }: { panels: Panel[] }) {
   return (
@@ -30,8 +30,8 @@ export function DevicePanels({ panels }: { panels: Panel[] }) {
 }
 
 function DeviceRow({ d }: { d: Device }) {
-  const selected = useLean((s) => s.selectedId === d.id);
-  const running = useLean((s) => s.ops[d.id]?.running ?? false);
+  const selected = useSthin((s) => s.selectedId === d.id);
+  const running = useSthin((s) => s.ops[d.id]?.running ?? false);
   const booted = d.state === "booted";
   return (
     <li

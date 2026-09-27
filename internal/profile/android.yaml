@@ -1,4 +1,4 @@
-# Android Profile: packages Lean disables with pm disable-user --user 0.
+# Android Profile: packages Sthin disables with pm disable-user --user 0.
 # Package names seeded from avdslim (kdbhalala, MIT); see NOTICE.
 # com.google.android.bluetooth: system_server crash-loops on Android 16+ when disabled.
 platform: android

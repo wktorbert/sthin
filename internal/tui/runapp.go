@@ -9,7 +9,7 @@ import (
 	"github.com/wktorbert/lean-sim/internal/project"
 )
 
-// x: run the project in Lean's working directory on the selected device.
+// x: run the project in Sthin's working directory on the selected device.
 // Framework projects take over the terminal (tea.ExecProcess) until the user
 // quits them; native projects install and launch in the background.
 

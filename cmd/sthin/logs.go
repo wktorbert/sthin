@@ -15,7 +15,7 @@ import (
 	"github.com/wktorbert/lean-sim/internal/logs"
 )
 
-// newLogsCmd is `lean logs`: a filtered snapshot, or a live follow until Ctrl-C.
+// newLogsCmd is `sthin logs`: a filtered snapshot, or a live follow until Ctrl-C.
 func newLogsCmd(a *app) *cobra.Command {
 	var follow, asJSON bool
 	var filter, level, out string

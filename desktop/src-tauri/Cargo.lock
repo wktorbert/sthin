@@ -1960,7 +1960,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "lean-desktop"
+name = "sthin-desktop"
 version = "0.1.0"
 dependencies = [
  "serde",

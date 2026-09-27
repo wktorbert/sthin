@@ -10,10 +10,10 @@ PASSED=0
 FAILED=0
 check() {
   local name="$1"; shift
-  if "$@" >/tmp/lean-desktop-check.log 2>&1; then
+  if "$@" >/tmp/sthin-desktop-check.log 2>&1; then
     echo "  PASS  $name"; PASSED=$((PASSED + 1))
   else
-    echo "  FAIL  $name"; sed 's/^/        /' /tmp/lean-desktop-check.log | tail -n 25; FAILED=$((FAILED + 1))
+    echo "  FAIL  $name"; sed 's/^/        /' /tmp/sthin-desktop-check.log | tail -n 25; FAILED=$((FAILED + 1))
   fi
 }
 

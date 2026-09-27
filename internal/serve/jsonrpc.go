@@ -18,16 +18,16 @@ import (
 // the methods live in methods_*.go.
 
 // JSON-RPC error codes. Protocol errors use the standard numbers; domain errors
-// use Lean's stable exit codes so the Desktop and the CLI agree on meaning.
+// use Sthin's stable exit codes so the Desktop and the CLI agree on meaning.
 const (
 	CodeParse         = -32700
 	CodeInvalidReq    = -32600
 	CodeMethodMissing = -32601
 	CodeInvalidParams = -32602
 	CodeCancelled     = -32800 // the request was cancelled by the client
-	CodeFailure       = 1      // lean exit 1
-	CodeUsage         = 2      // lean exit 2: unknown device, bad argument, physical refused
-	CodeNoDevice      = 3      // lean exit 3: no device to lease
+	CodeFailure       = 1      // sthin exit 1
+	CodeUsage         = 2      // sthin exit 2: unknown device, bad argument, physical refused
+	CodeNoDevice      = 3      // sthin exit 3: no device to lease
 )
 
 // Error is an error with a JSON-RPC code and optional structured data.
@@ -109,7 +109,7 @@ func (w *writer) notify(method string, params any) error {
 }
 
 // readLines delivers each stdin line to fn until the reader ends or ctx is done.
-// Lines are capped at 1 MiB, more than any request Lean defines.
+// Lines are capped at 1 MiB, more than any request Sthin defines.
 func readLines(ctx context.Context, r io.Reader, fn func([]byte)) error {
 	sc := bufio.NewScanner(r)
 	sc.Buffer(make([]byte, 1<<20), 1<<20)

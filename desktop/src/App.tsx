@@ -8,7 +8,7 @@ import { WirelessADB } from "@/components/wireless-adb";
 import { groupPanels } from "@/lib/device-panels";
 import { cn } from "@/lib/utils";
 import { retrySidecar } from "@/serve/client";
-import { dismissToast, setView, useLean, type View } from "@/store";
+import { dismissToast, setView, useSthin, type View } from "@/store";
 import { LogsView } from "@/views/logs-view";
 import { AboutView, DoctorView, LeasesView } from "@/views/info-views";
 
@@ -21,32 +21,32 @@ const tabs: { view: View; label: string }[] = [
 ];
 
 export function App() {
-  const phase = useLean((s) => s.phase);
-  const sidecar = useLean((s) => s.sidecar);
-  const refusal = useLean((s) => s.refusal);
+  const phase = useSthin((s) => s.phase);
+  const sidecar = useSthin((s) => s.sidecar);
+  const refusal = useSthin((s) => s.refusal);
 
   if (sidecar.state === "down") {
     return (
-      <Blocked title="Lean's engine stopped" body={sidecar.reason}>
+      <Blocked title="Sthin's engine stopped" body={sidecar.reason}>
         <pre className="max-h-64 overflow-auto rounded-md bg-card p-3 text-left text-xs select-text">{sidecar.stderr.join("\n")}</pre>
         <Button onClick={() => void retrySidecar()}>Retry</Button>
       </Blocked>
     );
   }
-  if (phase === "refused") return <Blocked title="This copy of Lean is broken" body={refusal ?? ""} />;
-  if (phase === "starting") return <Blocked title="Starting Lean…" body="" />;
+  if (phase === "refused") return <Blocked title="This copy of Sthin is broken" body={refusal ?? ""} />;
+  if (phase === "starting") return <Blocked title="Starting Sthin…" body="" />;
   return <Main />;
 }
 
 function Main() {
-  const view = useLean((s) => s.view);
-  const doctor = useLean((s) => s.doctor);
-  const toast = useLean((s) => s.toast);
+  const view = useSthin((s) => s.view);
+  const doctor = useSthin((s) => s.doctor);
+  const toast = useSthin((s) => s.toast);
   const [adb, setAdb] = useState(false);
   return (
     <div className="flex h-full flex-col">
       <header className="flex items-center gap-1 border-b px-3 py-2" data-tauri-drag-region>
-        <span className="mr-3 font-semibold text-primary">Lean</span>
+        <span className="mr-3 font-semibold text-primary">Sthin</span>
         {tabs.map((t) => (
           <Button key={t.view} size="sm" variant={view === t.view ? "secondary" : "ghost"} onClick={() => setView(t.view)}>
             {t.label}
@@ -79,7 +79,7 @@ function Main() {
 }
 
 function Notices() {
-  const platforms = useLean((s) => s.platforms);
+  const platforms = useSthin((s) => s.platforms);
   const { notices } = groupPanels(platforms, []);
   if (notices.length === 0) return null;
   return (
@@ -92,9 +92,9 @@ function Notices() {
 }
 
 function DevicesView() {
-  const platforms = useLean((s) => s.platforms);
-  const devices = useLean((s) => s.devices);
-  const selectedId = useLean((s) => s.selectedId);
+  const platforms = useSthin((s) => s.platforms);
+  const devices = useSthin((s) => s.devices);
+  const selectedId = useSthin((s) => s.selectedId);
   const { panels } = groupPanels(platforms, devices);
   return (
     <div className="grid h-full min-h-0 grid-cols-[minmax(22rem,1.1fr)_1fr]">

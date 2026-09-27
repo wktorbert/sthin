@@ -6,14 +6,17 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+
+	"github.com/wktorbert/lean-sim/internal/device"
 )
 
 // Prefs is what the user chose for one Device: the Categories to keep enabled
 // on a slim boot. Unlike the Change record it survives restore, because it is
 // a preference, not a record of what changed.
 type Prefs struct {
-	ID     string   `json:"id"`
-	Except []string `json:"except"` // Category IDs kept enabled
+	ID     string               `json:"id"`
+	Except []string             `json:"except"`           // Category IDs kept enabled
+	Launch device.LaunchOptions `json:"launch,omitempty"` // Android emulator switches
 }
 
 func (s Store) prefsPath(id string) string {
@@ -56,6 +59,28 @@ func (s Store) LoadPrefs(id string) (p Prefs, ok bool, err error) {
 		p.Except = []string{}
 	}
 	return p, true, nil
+}
+
+// MergeLaunch saves the given launch switches on top of the saved ones,
+// leaving the Category preference and unmentioned switches as they were.
+func (s Store) MergeLaunch(id string, l device.LaunchOptions) error {
+	p, _, err := s.LoadPrefs(id)
+	if err != nil {
+		return err
+	}
+	p.ID = id
+	p.Launch = p.Launch.Merge(l)
+	return s.SavePrefs(p)
+}
+
+// LaunchFor resolves the launch switches for one boot: the saved preference
+// with the explicit fields applied on top.
+func (s Store) LaunchFor(id string, given device.LaunchOptions) (device.LaunchOptions, error) {
+	p, _, err := s.LoadPrefs(id)
+	if err != nil {
+		return device.LaunchOptions{}, err
+	}
+	return p.Launch.Merge(given), nil
 }
 
 // ExceptFor resolves the Categories to keep for one boot: an explicit list

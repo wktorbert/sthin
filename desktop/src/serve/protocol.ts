@@ -1,4 +1,4 @@
-// Types for the `lean serve` protocol. The contract is docs/serve-protocol.md;
+// Types for the `sthin serve` protocol. The contract is docs/serve-protocol.md;
 // the Go source of truth is internal/serve. `Methods` is the one method list the
 // typed client (client.ts) is derived from: adding a method means adding one
 // entry here and nothing in Rust.
@@ -116,7 +116,7 @@ export interface BootParams {
 
 export interface Initialize {
   schema_version: number;
-  lean_version: string;
+  sthin_version: string;
   os: string;
   platforms: PlatformStatus[];
 }
@@ -160,7 +160,7 @@ export interface ServeError {
   data?: { stage?: string; command?: string; stages?: Stage[] };
 }
 
-/** Codes Lean defines on top of JSON-RPC's. */
+/** Codes Sthin defines on top of JSON-RPC's. */
 export const Codes = {
   Cancelled: -32800,
   /** Rust: the sidecar exited while the request was in flight. */

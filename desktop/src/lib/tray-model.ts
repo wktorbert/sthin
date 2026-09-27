@@ -41,9 +41,9 @@ export function trayModel(platforms: PlatformStatus[], devices: Device[], busy: 
   }
   out.push(
     { type: "separator" },
-    { type: "action", id: "show", text: "Show Lean" },
+    { type: "action", id: "show", text: "Show Sthin" },
     { type: "action", id: "doctor", text: "Doctor" },
-    { type: "action", id: "quit", text: "Quit Lean" },
+    { type: "action", id: "quit", text: "Quit Sthin" },
   );
   return out;
 }

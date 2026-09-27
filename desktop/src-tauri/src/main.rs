@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    lean_desktop_lib::run()
+    sthin_desktop_lib::run()
 }

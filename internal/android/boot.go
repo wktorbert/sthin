@@ -15,6 +15,13 @@ func (p *Provider) Boot(ctx context.Context, id string, opts device.BootOptions,
 	if err != nil {
 		return err
 	}
+	if opts.Name != "" {
+		if err := (device.Stages{R: r}).Do(stageRename, func() (string, error) {
+			return opts.Name, p.Rename(ctx, id, opts.Name)
+		}); err != nil {
+			return err
+		}
+	}
 	prof := p.profile()
 	except, err := p.State.ExceptFor(id, opts.Except)
 	if err != nil {
@@ -23,9 +30,19 @@ func (p *Provider) Boot(ctx context.Context, id string, opts device.BootOptions,
 	if err := prof.CheckExcept(except); err != nil {
 		return fmt.Errorf("%w: %v", device.ErrUsage, err)
 	}
+	launch, err := p.State.LaunchFor(id, opts.Launch)
+	if err != nil {
+		return err
+	}
 	ram := opts.RAMMB
 	if ram == 0 {
-		ram = defaultRAMMB
+		ram = device.Int(launch.RAMMB, defaultRAMMB)
+	}
+	sw := launchSwitches{
+		headless: opts.Headless || device.Bool(launch.Headless, false),
+		coldBoot: device.Bool(launch.ColdBoot, false),
+		audio:    device.Bool(launch.Audio, false),
+		lowRAM:   device.Bool(launch.LowRAM, false),
 	}
 	st := device.Stages{R: r}
 	_, running := p.running(ctx)[id]
@@ -44,14 +61,14 @@ func (p *Provider) Boot(ctx context.Context, id string, opts device.BootOptions,
 		}
 		if running {
 			st.Skip(stageTune, "emulator already running; config.ini applies at its next cold boot")
-		} else if err := st.Do(stageTune, func() (string, error) { return p.tuneAndRecord(a, ram, prof.Version) }); err != nil {
+		} else if err := st.Do(stageTune, func() (string, error) { return p.tuneAndRecord(a, ram, sw.audio, prof.Version) }); err != nil {
 			return err
 		}
 	}
 
 	if running {
 		st.Skip(stageLaunch, "already running")
-	} else if err := st.Do(stageLaunch, func() (string, error) { return p.launch(ctx, id, ram, opts.Stock, opts.Headless) }); err != nil {
+	} else if err := st.Do(stageLaunch, func() (string, error) { return p.launch(ctx, id, ram, opts.Stock, sw) }); err != nil {
 		return err
 	}
 	var serial string
@@ -72,8 +89,8 @@ func (p *Provider) Boot(ctx context.Context, id string, opts device.BootOptions,
 }
 
 // tuneAndRecord tunes config.ini and records the backup in the Change record.
-func (p *Provider) tuneAndRecord(a avd, ram, profileVersion int) (string, error) {
-	backup, err := tune(a.Dir, ram)
+func (p *Provider) tuneAndRecord(a avd, ram int, audio bool, profileVersion int) (string, error) {
+	backup, err := tune(a.Dir, ram, audio)
 	if err != nil {
 		return "", err
 	}
@@ -92,5 +109,9 @@ func (p *Provider) tuneAndRecord(a avd, ram, profileVersion int) (string, error)
 	if err := p.State.Save(rec); err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("hw.ramSize=%d, gpu host, audio and cameras off (backup %s)", ram, backup), nil
+	audioTxt := "audio off"
+	if audio {
+		audioTxt = "audio on"
+	}
+	return fmt.Sprintf("hw.ramSize=%d, gpu host, %s, cameras off (backup %s)", ram, audioTxt, backup), nil
 }

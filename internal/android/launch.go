@@ -16,6 +16,7 @@ const (
 	bootWaitCap    = 180 * time.Second
 	powerOffCap    = 60 * time.Second
 	persistWait    = 12 * time.Second
+	stageRename    = "rename"
 	stageTune      = "tune"
 	stageLaunch    = "launch"
 	stageWaitBoot  = "wait-boot"
@@ -34,7 +35,13 @@ const (
 // 36.4.9 with an android-33 image, -lowram alone makes qemu fail at startup
 // with "could not load initrd <avd>/initrd" (verified 2026-09-25 on this Mac).
 // The guest RAM cap comes from -memory and hw.ramSize instead.
-func launchArgs(name string, ramMB int, stock, headless bool, goos, display string) []string {
+//
+// launchSwitches are the resolved per-AVD options (see device.LaunchOptions).
+type launchSwitches struct {
+	headless, coldBoot, audio, lowRAM bool
+}
+
+func launchArgs(name string, ramMB int, stock bool, sw launchSwitches, goos, display string) []string {
 	gpu := "host"
 	if goos == "linux" && display == "" {
 		gpu = "swiftshader_indirect"
@@ -42,12 +49,43 @@ func launchArgs(name string, ramMB int, stock, headless bool, goos, display stri
 	args := []string{"-avd", name, "-gpu", gpu}
 	if !stock {
 		args = append(args, "-memory", strconv.Itoa(ramMB))
+		if sw.lowRAM {
+			args = append(args, "-lowram")
+		}
 	}
-	args = append(args, "-no-boot-anim", "-no-snapshot-save", "-no-audio", "-camera-back", "none", "-camera-front", "none")
-	if headless {
+	args = append(args, "-no-boot-anim", "-no-snapshot-save")
+	if sw.coldBoot {
+		args = append(args, "-no-snapshot-load")
+	}
+	if !sw.audio {
+		args = append(args, "-no-audio")
+	}
+	args = append(args, "-camera-back", "none", "-camera-front", "none")
+	if sw.headless {
 		args = append(args, "-no-window")
 	}
 	return args
+}
+
+// describe summarises the switches for a stage detail.
+func (sw launchSwitches) describe() string {
+	var parts []string
+	if sw.coldBoot {
+		parts = append(parts, "cold boot")
+	}
+	if sw.audio {
+		parts = append(parts, "audio on")
+	}
+	if sw.lowRAM {
+		parts = append(parts, "lowram")
+	}
+	if sw.headless {
+		parts = append(parts, "headless")
+	}
+	if len(parts) == 0 {
+		return "defaults"
+	}
+	return strings.Join(parts, ", ")
 }
 
 func (p *Provider) poll() time.Duration {
@@ -57,8 +95,8 @@ func (p *Provider) poll() time.Duration {
 	return defaultPoll
 }
 
-// launch starts the emulator detached with its log under $LEAN_HOME/logs.
-func (p *Provider) launch(ctx context.Context, name string, ramMB int, stock, headless bool) (string, error) {
+// launch starts the emulator detached with its log under $STHIN_HOME/logs.
+func (p *Provider) launch(ctx context.Context, name string, ramMB int, stock bool, sw launchSwitches) (string, error) {
 	if p.Emulator == "" {
 		return "", fmt.Errorf("emulator binary not found (set ANDROID_HOME)")
 	}
@@ -66,12 +104,12 @@ func (p *Provider) launch(ctx context.Context, name string, ramMB int, stock, he
 	if p.Env.Getenv != nil {
 		goos, display = p.Env.GOOS, p.Env.Getenv("DISPLAY")
 	}
-	args := launchArgs(name, ramMB, stock, headless, goos, display)
-	logPath := filepath.Join(p.LeanHome, "logs", name+".log")
+	args := launchArgs(name, ramMB, stock, sw, goos, display)
+	logPath := filepath.Join(p.SthinHome, "logs", name+".log")
 	if err := p.Run.Start(ctx, logPath, p.Emulator, args...); err != nil {
 		return "", &device.StageError{Command: p.Emulator + " " + strings.Join(args, " "), Err: err}
 	}
-	return "log: " + logPath, nil
+	return sw.describe() + "; log: " + logPath, nil
 }
 
 // waitBoot polls adb until an emulator serial reports this AVD's name and

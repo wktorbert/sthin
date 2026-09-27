@@ -1,4 +1,4 @@
-//! Pure pieces of talking to `lean serve`: classifying a stdout line and the
+//! Pure pieces of talking to `sthin serve`: classifying a stdout line and the
 //! restart budget. Kept free of Tauri types so they are unit-testable.
 
 use serde_json::{json, Value};
@@ -21,7 +21,7 @@ pub enum Incoming {
     },
     /// A notification, forwarded to the frontend as-is.
     Notification { method: String, params: Value },
-    /// Not JSON-RPC Lean sends; kept for diagnostics.
+    /// Not JSON-RPC Sthin sends; kept for diagnostics.
     Garbage(String),
 }
 

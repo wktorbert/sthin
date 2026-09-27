@@ -1,4 +1,4 @@
-// Package tui is Lean's terminal UI: one list of every simulator and emulator,
+// Package tui is Sthin's terminal UI: one list of every simulator and emulator,
 // Enter to slim boot, r to restore, t to shut down, ? for help. It talks only
 // to device.Providers through the Registry.
 package tui
@@ -23,6 +23,8 @@ const (
 	modePicker
 	modeWireless
 	modeLogs
+	modeLaunch
+	modeRename
 )
 
 // Messages.
@@ -68,8 +70,10 @@ type Model struct {
 	pick       []pickRow
 	pickCursor int
 
-	form wirelessForm // wireless ADB dialog
-	logs *logView     // live log viewer (modeLogs)
+	form   wirelessForm // wireless ADB dialog
+	logs   *logView     // live log viewer (modeLogs)
+	launch *launchForm  // Android launch options dialog (modeLaunch)
+	rename *renameForm  // rename dialog (modeRename)
 }
 
 // New returns a Model that refreshes every 2 s while idle. version is shown
@@ -206,6 +210,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 		return m, nil
+	case renameDoneMsg:
+		m.busy = false
+		if msg.err != nil {
+			m.status = "rename: " + msg.err.Error()
+		} else {
+			m.status = "renamed to " + msg.name
+		}
+		return m, m.load()
 	case runDoneMsg:
 		m.busy = false
 		if msg.err != nil {
@@ -259,6 +271,10 @@ func (m Model) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.mode, m.status = modeList, "restore cancelled"
 		}
 		return m, nil
+	case modeRename:
+		return m.renameKey(k)
+	case modeLaunch:
+		return m.launchKey(k)
 	case modeLogs:
 		return m.logsKey(k)
 	case modeWireless:
@@ -320,7 +336,7 @@ func (m Model) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		if d.Kind == device.Physical {
-			m.status = d.Name + " is a physical device; Lean never modifies physical devices"
+			m.status = d.Name + " is a physical device; Sthin never modifies physical devices"
 			return m, nil
 		}
 		switch s {
@@ -344,6 +360,14 @@ func (m Model) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "l":
 		if d, p, ok := m.selected(); ok && !m.busy {
 			return m.openLogs(d, p)
+		}
+	case "o":
+		if d, _, ok := m.selected(); ok && !m.busy {
+			m = m.openLaunchOptions(d)
+		}
+	case "n":
+		if d, p, ok := m.selected(); ok && !m.busy {
+			m = m.openRename(d, p)
 		}
 	}
 	return m, nil

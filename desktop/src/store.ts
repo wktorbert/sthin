@@ -54,7 +54,7 @@ interface State {
   toast?: string;
 }
 
-export const useLean = create<State>(() => ({
+export const useSthin = create<State>(() => ({
   phase: "starting",
   sidecar: { state: "starting" },
   appVersion: "",
@@ -65,8 +65,8 @@ export const useLean = create<State>(() => ({
   view: "devices",
 }));
 
-const set = useLean.setState;
-const get = useLean.getState;
+const set = useSthin.setState;
+const get = useSthin.getState;
 let subscriptionId: number | null = null;
 // Bumped by every openLogs/closeLogs, so a slower, older openLogs can tell it
 // was superseded and must not overwrite the view or leave a stream running.
@@ -84,7 +84,7 @@ export async function startApp(): Promise<void> {
 /** Handshake, version gate, then the data the window shows. Re-run after a restart. */
 export async function connect(): Promise<void> {
   try {
-    const init = await call("initialize", { client_name: "lean-desktop", client_version: get().appVersion });
+    const init = await call("initialize", { client_name: "sthin-desktop", client_version: get().appVersion });
     const gate = checkSidecar(get().appVersion, init);
     if (!gate.ok) {
       set({ phase: "refused", refusal: gate.reason, init });
@@ -93,7 +93,7 @@ export async function connect(): Promise<void> {
     set({ init, phase: "ready" });
     // After a restart the old process's log stream is gone and will never end.
     const log = get().log;
-    if (log?.requestId != null) set({ log: { ...log, requestId: null, ended: "Lean restarted; reopen the log to follow it again" } });
+    if (log?.requestId != null) set({ log: { ...log, requestId: null, ended: "Sthin restarted; reopen the log to follow it again" } });
     const s = start("devices_subscribe", {});
     subscriptionId = s.id;
     const listing = await s.result;

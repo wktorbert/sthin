@@ -23,7 +23,7 @@ describe("trayModel", () => {
   it("lists virtual devices per platform with a booted marker, never physical ones", () => {
     const m = trayModel(both, [dev({ state: "booted", slim: "slim" }), dev({ id: "P1", name: "Phone", kind: "physical" }), dev({ id: "A1", name: "Pixel_7", platform: "android", kind: "emulator", os_version: "16" })], new Set());
     const texts = m.map((e) => ("text" in e ? e.text : e.type));
-    expect(texts).toEqual(["iOS Simulators", "● iPhone 17 · 26.5", "Android Emulators", "○ Pixel_7 · 16", "separator", "Show Lean", "Doctor", "Quit Lean"]);
+    expect(texts).toEqual(["iOS Simulators", "● iPhone 17 · 26.5", "Android Emulators", "○ Pixel_7 · 16", "separator", "Show Sthin", "Doctor", "Quit Sthin"]);
   });
 
   it("enables only the actions that make sense for the device's state", () => {

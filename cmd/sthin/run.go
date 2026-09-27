@@ -10,7 +10,7 @@ import (
 	"github.com/wktorbert/lean-sim/internal/project"
 )
 
-// newRunCmd is `lean run`: detect the project in the current directory and
+// newRunCmd is `sthin run`: detect the project in the current directory and
 // run it on a device.
 func newRunCmd(a *app) *cobra.Command {
 	var o project.Opts
@@ -25,7 +25,7 @@ func newRunCmd(a *app) *cobra.Command {
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if o.Device == "" {
-				return usageErr("--device is required (see lean list)")
+				return usageErr("--device is required (see sthin list)")
 			}
 			if o.Dir == "" {
 				o.Dir, _ = os.Getwd()

@@ -35,6 +35,15 @@ func (p *Provider) Launch(ctx context.Context, udid, bundleID string) error {
 	return err
 }
 
+// Rename implements device.Renamer: `simctl rename`, effective immediately.
+func (p *Provider) Rename(ctx context.Context, udid, name string) error {
+	if strings.TrimSpace(name) == "" {
+		return fmt.Errorf("%w: name must not be empty", device.ErrUsage)
+	}
+	_, err := p.cmd(ctx, "rename", udid, name)
+	return err
+}
+
 // Serial implements device.Controller: the UDID is the address every tool uses.
 func (p *Provider) Serial(_ context.Context, udid string) (string, error) { return udid, nil }
 

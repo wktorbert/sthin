@@ -1,4 +1,4 @@
-// Package mcpserver exposes Lean to agents over the Model Context Protocol:
+// Package mcpserver exposes Sthin to agents over the Model Context Protocol:
 // the same Provider operations as the CLI and TUI, plus the lease pool. It
 // never shells out itself; every tool goes through device.Provider or
 // device.Controller.
@@ -31,17 +31,17 @@ type Deps struct {
 	Env           host.Env
 }
 
-// New builds the MCP server with every Lean tool registered.
+// New builds the MCP server with every Sthin tool registered.
 func New(d Deps) *mcp.Server {
 	if d.ScreenshotDir == "" {
 		d.ScreenshotDir = os.TempDir()
 	}
-	s := mcp.NewServer(&mcp.Implementation{Name: "lean", Version: d.Version}, nil)
+	s := mcp.NewServer(&mcp.Implementation{Name: "sthin", Version: d.Version}, nil)
 	t := tools{d}
 	mcp.AddTool(s, &mcp.Tool{Name: "devices_list", Description: "List simulators, emulators and physical devices with state, slim state, memory footprint and any active lease."}, t.devicesList)
 	mcp.AddTool(s, &mcp.Tool{Name: "boot", Description: "Slim boot a simulator or emulator (headless by default) and wait until it is ready. Returns the stages and the memory footprint."}, t.boot)
 	mcp.AddTool(s, &mcp.Tool{Name: "shutdown", Description: "Shut a simulator or emulator down."}, t.shutdown)
-	mcp.AddTool(s, &mcp.Tool{Name: "restore", Description: "Return a device to stock: undo exactly what Lean changed."}, t.restore)
+	mcp.AddTool(s, &mcp.Tool{Name: "restore", Description: "Return a device to stock: undo exactly what Sthin changed."}, t.restore)
 	mcp.AddTool(s, &mcp.Tool{Name: "measure", Description: "Memory footprint of a booted device in MB (phys_footprint, as Activity Monitor shows)."}, t.measure)
 	mcp.AddTool(s, &mcp.Tool{Name: "screenshot", Description: "Take a PNG screenshot. Returns the file path; set inline=true to also get the image."}, t.screenshot)
 	mcp.AddTool(s, &mcp.Tool{Name: "tap", Description: "Tap at screen coordinates (Android only; iOS simulators have no tap API)."}, t.tap)
@@ -51,8 +51,9 @@ func New(d Deps) *mcp.Server {
 	mcp.AddTool(s, &mcp.Tool{Name: "lease", Description: "Acquire an idle device for this agent: reuses a booted one or slim boots one headless. The lease expires after ttl_seconds so a crashed agent never strands a device."}, t.lease)
 	mcp.AddTool(s, &mcp.Tool{Name: "release", Description: "Release a leased device, optionally shutting it down."}, t.release)
 	mcp.AddTool(s, &mcp.Tool{Name: "leases", Description: "List active leases."}, t.leases)
-	mcp.AddTool(s, &mcp.Tool{Name: "run", Description: "Install and launch a mobile project's built debug app on a device (Flutter, React Native, Xcode or Gradle project; or an explicit .app/.apk), then optionally open a deep link. Build the app first; the interactive framework hand-off is CLI-only (lean run)."}, t.run)
+	mcp.AddTool(s, &mcp.Tool{Name: "run", Description: "Install and launch a mobile project's built debug app on a device (Flutter, React Native, Xcode or Gradle project; or an explicit .app/.apk), then optionally open a deep link. Build the app first; the interactive framework hand-off is CLI-only (sthin run)."}, t.run)
 	mcp.AddTool(s, &mcp.Tool{Name: "open_url", Description: "Open a deep link or web URL on a device."}, t.openURL)
+	mcp.AddTool(s, &mcp.Tool{Name: "rename", Description: "Rename a simulator or AVD (physical devices are refused)."}, t.rename)
 	return s
 }
 
@@ -67,11 +68,19 @@ type platformIn struct {
 	Platform string `json:"platform,omitempty" jsonschema:"ios or android; empty for both"`
 }
 type bootIn struct {
-	ID     string   `json:"id" jsonschema:"device ID or exact name"`
-	Stock  bool     `json:"stock,omitempty" jsonschema:"boot without slimming"`
-	Except []string `json:"except,omitempty" jsonschema:"category IDs to keep enabled; omit to use the device's saved preference"`
-	Window bool     `json:"window,omitempty" jsonschema:"open a window (Simulator/DeviceHub or emulator UI); default headless"`
-	RAMMB  int      `json:"ram_mb,omitempty" jsonschema:"Android guest RAM in MB (default 1024)"`
+	ID       string   `json:"id" jsonschema:"device ID or exact name"`
+	Stock    bool     `json:"stock,omitempty" jsonschema:"boot without slimming"`
+	Except   []string `json:"except,omitempty" jsonschema:"category IDs to keep enabled; omit to use the device's saved preference"`
+	Window   bool     `json:"window,omitempty" jsonschema:"open a window (Simulator/DeviceHub or emulator UI); default headless"`
+	RAMMB    int      `json:"ram_mb,omitempty" jsonschema:"Android guest RAM in MB (default 1024)"`
+	ColdBoot *bool    `json:"cold_boot,omitempty" jsonschema:"Android: ignore the quick-boot snapshot; omit to use the AVD's saved preference"`
+	Audio    *bool    `json:"audio,omitempty" jsonschema:"Android: keep audio on; omit to use the saved preference"`
+	LowRAM   *bool    `json:"lowram,omitempty" jsonschema:"Android: pass -lowram; omit to use the saved preference"`
+	Name     string   `json:"name,omitempty" jsonschema:"rename the device before booting"`
+}
+type renameIn struct {
+	ID   string `json:"id" jsonschema:"device ID or exact name"`
+	Name string `json:"name" jsonschema:"the new display name"`
 }
 type screenshotIn struct {
 	ID     string `json:"id" jsonschema:"device ID or exact name"`
@@ -157,7 +166,7 @@ func (t tools) boot(ctx context.Context, _ *mcp.CallToolRequest, in bootIn) (*mc
 	if err != nil {
 		return nil, nil, err
 	}
-	res := runBoot(ctx, p, d, device.BootOptions{Stock: in.Stock, Except: in.Except, RAMMB: in.RAMMB, Headless: !in.Window})
+	res := runBoot(ctx, p, d, device.BootOptions{Stock: in.Stock, Except: in.Except, RAMMB: in.RAMMB, Headless: !in.Window, Launch: device.LaunchOptions{ColdBoot: in.ColdBoot, Audio: in.Audio, LowRAM: in.LowRAM}, Name: in.Name})
 	if res.Error != "" {
 		return nil, nil, fmt.Errorf("boot %s: %s", d.Name, res.Error)
 	}
@@ -214,7 +223,7 @@ func (t tools) screenshot(ctx context.Context, _ *mcp.CallToolRequest, in screen
 	}
 	path := in.Path
 	if path == "" {
-		path = filepath.Join(t.ScreenshotDir, fmt.Sprintf("lean-%s-%d.png", sanitize(d.ID), time.Now().UnixMilli()))
+		path = filepath.Join(t.ScreenshotDir, fmt.Sprintf("sthin-%s-%d.png", sanitize(d.ID), time.Now().UnixMilli()))
 	}
 	if err := c.Screenshot(ctx, d.ID, path); err != nil {
 		return nil, nil, err
@@ -392,4 +401,19 @@ func (t tools) openURL(ctx context.Context, _ *mcp.CallToolRequest, in urlIn) (*
 		return nil, nil, err
 	}
 	return textResult("opened " + in.URL + " on " + d.Name)
+}
+
+func (t tools) rename(ctx context.Context, _ *mcp.CallToolRequest, in renameIn) (*mcp.CallToolResult, any, error) {
+	p, d, err := t.resolveVirtual(ctx, in.ID, "rename")
+	if err != nil {
+		return nil, nil, err
+	}
+	rn, ok := p.(device.Renamer)
+	if !ok {
+		return nil, nil, fmt.Errorf("%s provider cannot rename devices", d.Platform)
+	}
+	if err := rn.Rename(ctx, d.ID, in.Name); err != nil {
+		return nil, nil, err
+	}
+	return textResult(d.Name + " renamed to " + in.Name)
 }

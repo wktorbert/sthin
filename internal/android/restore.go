@@ -38,7 +38,7 @@ func (p *Provider) Restore(ctx context.Context, id string, r device.Reporter) er
 	serial, running := p.running(ctx)[id]
 	needsGuest := len(rec.Disabled) > 0 || len(applied(rec.Settings)) > 0
 	if needsGuest && !running {
-		if err := st.Do(stageLaunch, func() (string, error) { return p.launch(ctx, id, 0, true, false) }); err != nil {
+		if err := st.Do(stageLaunch, func() (string, error) { return p.launch(ctx, id, 0, true, launchSwitches{}) }); err != nil {
 			return err
 		}
 		if err := st.Do(stageWaitBoot, func() (string, error) {

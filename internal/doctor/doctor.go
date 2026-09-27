@@ -178,7 +178,7 @@ func (d Doctor) androidChecks() []Check {
 	}
 	cs = append(cs,
 		listCheck(names[0], newer, "all AVDs at or below the Profile's API "+validated, "newer than the Profile (validated against API "+validated+")"),
-		listCheck(names[1], ps16k, "no 16 KB page-size images", "use 16 KB page-size images; Lean refuses to tune them"),
+		listCheck(names[1], ps16k, "no 16 KB page-size images", "use 16 KB page-size images; Sthin refuses to tune them"),
 		listCheck(names[2], gpu, "no AVD uses gpu auto or swiftshader", "use a slow GPU mode; a slim boot switches them to host"),
 		listCheck(names[3], play, "no Play Store images", "are Play Store images (no adb root; a few system packages may refuse to disable)"),
 	)

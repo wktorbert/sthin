@@ -1,5 +1,5 @@
 // Package wiring builds the real Providers and Doctor for this host. It is the
-// CLI's only route to the platform packages and the real Runner, so cmd/lean
+// CLI's only route to the platform packages and the real Runner, so cmd/sthin
 // and internal/tui depend on device.Provider alone.
 package wiring
 

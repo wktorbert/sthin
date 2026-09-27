@@ -7,11 +7,11 @@ import { CategoryPicker } from "@/components/category-picker";
 import { SlimBadge } from "@/components/device-panels";
 import { StageList } from "@/components/stage-list";
 import type { Device } from "@/serve/protocol";
-import { bootDevice, cancelOp, openLogs, restoreDevice, shutdownDevice, useLean } from "@/store";
+import { bootDevice, cancelOp, openLogs, restoreDevice, shutdownDevice, useSthin } from "@/store";
 
 export function DeviceDetails({ device }: { device?: Device }) {
-  const op = useLean((s) => (device ? s.ops[device.id] : undefined));
-  const blocking = useLean((s) => s.doctor?.blocking ?? false);
+  const op = useSthin((s) => (device ? s.ops[device.id] : undefined));
+  const blocking = useSthin((s) => s.doctor?.blocking ?? false);
   const [picking, setPicking] = useState(false);
   const [confirmRestore, setConfirmRestore] = useState(false);
 

@@ -1,4 +1,4 @@
-//! Owns the `lean serve` child process: spawns it, frames requests, routes
+//! Owns the `sthin serve` child process: spawns it, frames requests, routes
 //! responses to waiting calls and notifications to the webview, and respawns
 //! it within a budget when it exits. It knows nothing about devices; the
 //! domain lives in Go (Serve) and TypeScript (the frontend).
@@ -65,7 +65,7 @@ impl Sidecar {
         let state = app.state::<Sidecar>();
         let spawned = app
             .shell()
-            .sidecar("lean")
+            .sidecar("sthin")
             .map(|c| c.args(["serve"]))
             .and_then(|c| c.spawn());
         let mut inner = state.inner.lock().unwrap();
@@ -85,9 +85,9 @@ impl Sidecar {
             Err(e) => {
                 inner
                     .stderr
-                    .push(format!("could not start lean serve: {e}"));
+                    .push(format!("could not start sthin serve: {e}"));
                 inner.status = Status::Down {
-                    reason: format!("could not start lean serve: {e}"),
+                    reason: format!("could not start sthin serve: {e}"),
                     stderr: inner.stderr.lines(),
                 };
                 drop(inner);
@@ -134,7 +134,7 @@ impl Sidecar {
                 Some(child) => child
                     .write(wire::request_line(id, method, &params).as_bytes())
                     .map_err(|e| e.to_string()),
-                None => Err("lean serve is not running".to_string()),
+                None => Err("sthin serve is not running".to_string()),
             }
         };
         if let Err(msg) = written {
@@ -142,7 +142,7 @@ impl Sidecar {
             return Err(wire::error(wire::CODE_SERVE_DOWN, &msg));
         }
         rx.await
-            .unwrap_or_else(|_| Err(wire::error(wire::CODE_SERVE_EXITED, "lean serve exited")))
+            .unwrap_or_else(|_| Err(wire::error(wire::CODE_SERVE_EXITED, "sthin serve exited")))
     }
 
     /// Fails every waiting call: its answer died with the process.
@@ -150,7 +150,7 @@ impl Sidecar {
         for (_, tx) in self.pending.lock().unwrap().drain() {
             let _ = tx.send(Err(wire::error(
                 wire::CODE_SERVE_EXITED,
-                "lean serve exited while this request was in flight",
+                "sthin serve exited while this request was in flight",
             )));
         }
     }
@@ -212,7 +212,7 @@ async fn pump(
                     &app,
                     generation,
                     format!(
-                        "lean serve exited (code {:?}, signal {:?})",
+                        "sthin serve exited (code {:?}, signal {:?})",
                         payload.code, payload.signal
                     ),
                 );
@@ -221,7 +221,7 @@ async fn pump(
             _ => {}
         }
     }
-    on_exit(&app, generation, "lean serve closed its output".into());
+    on_exit(&app, generation, "sthin serve closed its output".into());
 }
 
 fn on_exit(app: &AppHandle, generation: u64, reason: String) {

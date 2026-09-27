@@ -15,14 +15,14 @@ cd "$(dirname "$0")/.."
 PLATFORM="${1:?usage: live-check.sh <ios|android> <id> [settle-seconds]}"
 ID="${2:?usage: live-check.sh <ios|android> <id> [settle-seconds]}"
 SETTLE="${3:-60}"
-LEAN="${LEAN_BIN:-bin/lean}"
+STHIN="${STHIN_BIN:-bin/sthin}"
 TMP="$(mktemp -d)"
 
 case "$PLATFORM" in ios|android) ;; *) echo "platform must be ios or android" >&2; exit 2 ;; esac
-[ -x "$LEAN" ] || go build -o "$LEAN" ./cmd/lean
+[ -x "$STHIN" ] || go build -o "$STHIN" ./cmd/sthin
 
 cleanup() {
-  "$LEAN" shutdown "$ID" >/dev/null 2>&1 || true
+  "$STHIN" shutdown "$ID" >/dev/null 2>&1 || true
   rm -rf "$TMP"
 }
 trap cleanup EXIT
@@ -36,12 +36,12 @@ print(next(x["slim"] for x in d["devices"] if x["id"]==sys.argv[2]))' "$1" "$ID"
 }
 
 echo "== boot $PLATFORM $ID (slim)" >&2
-"$LEAN" boot "$ID" >&2
+"$STHIN" boot "$ID" >&2
 
 echo "== settle ${SETTLE}s" >&2
 sleep "$SETTLE"
 
-"$LEAN" measure "$ID" --json > "$TMP/measure.json"
+"$STHIN" measure "$ID" --json > "$TMP/measure.json"
 read -r FOOTPRINT PROCESSES < <(python3 -c '
 import json,sys
 m=json.load(open(sys.argv[1]))
@@ -49,7 +49,7 @@ fp=m.get("dirty_mb") if sys.argv[2]=="android" and m.get("dirty_mb") is not None
 print(fp, m["process_count"])' "$TMP/measure.json" "$PLATFORM")
 cat "$TMP/measure.json" >&2
 
-"$LEAN" list --json > "$TMP/list-slim.json" 2>/dev/null
+"$STHIN" list --json > "$TMP/list-slim.json" 2>/dev/null
 SLIM="$(slim_of "$TMP/list-slim.json")"
 
 # Targets from SPEC AC11; on a miss, show the top 10 processes so the miss is diagnosable.
@@ -88,11 +88,11 @@ PY
 fi
 
 echo "== restore" >&2
-"$LEAN" restore "$ID" >&2
-"$LEAN" list --json > "$TMP/list-restored.json" 2>/dev/null
+"$STHIN" restore "$ID" >&2
+"$STHIN" list --json > "$TMP/list-restored.json" 2>/dev/null
 RESTORED="$(slim_of "$TMP/list-restored.json")"
 
-"$LEAN" shutdown "$ID" >&2
+"$STHIN" shutdown "$ID" >&2
 
 echo "LIVE-CHECK $PLATFORM $ID: footprint=${FOOTPRINT}MB processes=${PROCESSES} slim=${SLIM} restored=${RESTORED}"
 [ "$SLIM" = slim ] && [ "$RESTORED" = stock ]

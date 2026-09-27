@@ -29,6 +29,8 @@ const keyHelp = `  ↑/↓  j/k   move
   w          wireless ADB: pair and connect a phone over Wi-Fi
   x          run the app in the current directory on the device
   l          follow the device log live (filter, level, save)
+  o          Android launch options: cold boot, audio, low-RAM, headless, RAM (saved per AVD)
+  n          rename the simulator or AVD
   ?          toggle this help
   q          quit`
 
@@ -75,6 +77,10 @@ func (m Model) View() string {
 	switch {
 	case m.help:
 		body = m.dialog("Help", keyHelp+"\n\n"+dimStyle.Render("press any key to close"), w, bodyH)
+	case m.mode == modeRename:
+		body = m.dialogLines("Rename "+m.rename.target.Name, m.renameLines(), w, bodyH)
+	case m.mode == modeLaunch:
+		body = m.dialogLines("Launch options: "+m.launch.target.Name, m.launchLines(), w, bodyH)
 	case m.mode == modeLogs:
 		body = panel("Logs: "+m.logs.target.Name, m.logsLines(w, bodyH-2), w, bodyH-2, true)
 	case m.mode == modeWireless:
@@ -82,7 +88,7 @@ func (m Model) View() string {
 	case m.mode == modePicker:
 		body = m.dialogLines("Keep enabled on "+m.target.Name, m.pickerLines(), w, bodyH)
 	case m.mode == modeConfirm:
-		txt := fmt.Sprintf("Restore %s to stock?\nThis undoes everything Lean changed.\n\n%s", m.target.Name, warnStyle.Render("[y/N]"))
+		txt := fmt.Sprintf("Restore %s to stock?\nThis undoes everything Sthin changed.\n\n%s", m.target.Name, warnStyle.Render("[y/N]"))
 		body = m.dialog("Restore", txt, w, bodyH)
 	default:
 		body = m.columns(w, bodyH)
@@ -91,7 +97,7 @@ func (m Model) View() string {
 }
 
 func (m Model) header(w int) string {
-	left := headerStyle.Render(" " + iconOn + " Lean v" + m.version + " ")
+	left := headerStyle.Render(" " + iconOn + " Sthin v" + m.version + " ")
 	return fit(left+dimStyle.Render("Theme: "+themeName), w)
 }
 
@@ -105,7 +111,7 @@ func (m Model) statusBar(w int) string {
 	case m.status != "":
 		s = m.status + "   " + dimStyle.Render("Help: ?")
 	default:
-		s = "Launch: <enter> | Logs: l | Run app: x | Categories: c | Restore: r | Shutdown: t | Wireless: w | Switch: <tab> | Help: ? | Quit: q"
+		s = "Launch: <enter> | Logs: l | Run app: x | Categories: c | Options: o | Rename: n | Restore: r | Shutdown: t | Wireless: w | Switch: <tab> | Help: ? | Quit: q"
 	}
 	return fit(" "+s, w)
 }
@@ -239,6 +245,11 @@ func (m Model) details(w, bodyH int) string {
 	if kept := m.kept(d.ID); len(kept) > 0 {
 		rows = append(rows, [2]string{"Kept", joinOrNone(kept)})
 	}
+	if d.Platform == device.Android && d.Kind != device.Physical {
+		if p, ok, _ := m.prefs.LoadPrefs(d.ID); ok && !p.Launch.IsZero() {
+			rows = append(rows, [2]string{"Launch", launchSummary(p.Launch)})
+		}
+	}
 	if len(d.Warnings) > 0 {
 		rows = append(rows, [2]string{"Warnings", strings.Join(d.Warnings, "; ")})
 	}
@@ -284,7 +295,7 @@ func (m Model) progressPanel(w, bodyH int) string {
 		lines = append(lines, "")
 		if m.opErr != nil {
 			lines = append(lines, failStyle.Render(m.op+" failed: "+m.opErr.Error()))
-			lines = append(lines, dimStyle.Render("The device is left as it is; restore undoes anything Lean changed."))
+			lines = append(lines, dimStyle.Render("The device is left as it is; restore undoes anything Sthin changed."))
 		} else {
 			lines = append(lines, okStyle.Render(m.op+" complete"))
 		}

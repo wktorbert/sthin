@@ -7,7 +7,7 @@ import (
 	"syscall"
 )
 
-// detach puts the child in its own session so it outlives lean.
+// detach puts the child in its own session so it outlives sthin.
 func detach(cmd *osexec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 }

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Minimal MCP stdio client for smoke tests and scripts: speaks JSON-RPC to
-`lean mcp` the same way Claude Code does.
+`sthin mcp` the same way Claude Code does.
 
-Usage: mcp-client.py <lean-binary> <tool> [json-args] [<tool> [json-args] ...]
+Usage: mcp-client.py <sthin-binary> <tool> [json-args] [<tool> [json-args] ...]
 Prints one JSON object per call: {"tool": ..., "isError": ..., "text": ...}.
 Exit 1 if any call is a tool error or the handshake fails."""
 import json

@@ -16,7 +16,7 @@ import (
 func newServeCmd(a *app) *cobra.Command {
 	return &cobra.Command{
 		Use:   "serve",
-		Short: "Serve Lean's operations to another process over stdio (JSON-RPC, used by the desktop app)",
+		Short: "Serve Sthin's operations to another process over stdio (JSON-RPC, used by the desktop app)",
 		Long:  "Runs a long-lived JSON-RPC 2.0 session on stdin/stdout with live notifications for boot progress, log lines and device list changes. The desktop app starts it as a sidecar. Every method uses the same code path as the CLI, TUI and MCP. Protocol: docs/serve-protocol.md.",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {

@@ -1,4 +1,4 @@
-// Package project runs the app in a mobile project on a Lean device: detect
+// Package project runs the app in a mobile project on a Sthin device: detect
 // the project kind, hand off to the framework's own run command (Flutter,
 // React Native) or install and launch a built artifact (native), then open a
 // deep link. It is the one module that knows what a mobile project looks like.

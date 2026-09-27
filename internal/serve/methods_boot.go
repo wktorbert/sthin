@@ -2,6 +2,7 @@ package serve
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/wktorbert/lean-sim/internal/device"
@@ -27,6 +28,16 @@ type bootIn struct {
 	Remember bool     `json:"remember,omitempty"`
 	RAMMB    int      `json:"ram_mb,omitempty"`
 	Headless bool     `json:"headless,omitempty"`
+	// Android launch switches; absent fields use the AVD's saved preference.
+	ColdBoot *bool  `json:"cold_boot,omitempty"`
+	Audio    *bool  `json:"audio,omitempty"`
+	LowRAM   *bool  `json:"lowram,omitempty"`
+	Name     string `json:"name,omitempty"` // rename before booting
+}
+
+type renameIn struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // stageFailure is the error data attached to a failed boot or restore, so the
@@ -74,7 +85,7 @@ func (s *Server) boot(r *request) (any, error) {
 			return nil, err
 		}
 	}
-	opts := device.BootOptions{Stock: in.Stock, Except: in.Except, RAMMB: in.RAMMB, Headless: in.Headless}
+	opts := device.BootOptions{Stock: in.Stock, Except: in.Except, RAMMB: in.RAMMB, Headless: in.Headless, Launch: device.LaunchOptions{ColdBoot: in.ColdBoot, Audio: in.Audio, LowRAM: in.LowRAM}, Name: in.Name}
 	res := ops.RunBoot(r.ctx, p, d, opts, r.progress)
 	if res.Err != nil {
 		if r.ctx.Err() != nil {
@@ -129,6 +140,29 @@ func (s *Server) shutdown(r *request) (any, error) {
 		return nil, err
 	}
 	return map[string]any{"device": d.ID}, nil
+}
+
+// rename sets a simulator's or AVD's display name.
+func (s *Server) rename(r *request) (any, error) {
+	var in renameIn
+	if err := r.decode(&in); err != nil {
+		return nil, err
+	}
+	if in.ID == "" || in.Name == "" {
+		return nil, fmt.Errorf("%w: id and name are required", device.ErrUsage)
+	}
+	p, d, err := ops.ResolveVirtual(r.ctx, s.Reg, in.ID, "rename")
+	if err != nil {
+		return nil, err
+	}
+	rn, ok := p.(device.Renamer)
+	if !ok {
+		return nil, fmt.Errorf("%s provider cannot rename devices", d.Platform)
+	}
+	if err := rn.Rename(r.ctx, d.ID, in.Name); err != nil {
+		return nil, err
+	}
+	return map[string]any{"device": d.ID, "name": in.Name}, nil
 }
 
 func (s *Server) measure(r *request) (any, error) {
