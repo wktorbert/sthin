@@ -81,10 +81,13 @@ jobs:
         if: matrix.os == 'macos-latest' && matrix.target == 'aarch64-apple-darwin'
         run: go vet ./... && go test ./... -count=1
 
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: pnpm install --frozen-lockfile
+
       - name: Desktop checks
         working-directory: desktop
         run: |
-          pnpm install --frozen-lockfile
           pnpm -s typecheck
           pnpm -s test
           cargo fmt --manifest-path src-tauri/Cargo.toml --check
@@ -92,24 +95,36 @@ jobs:
           cargo test --manifest-path src-tauri/Cargo.toml --target ${{ matrix.target }}
         if: matrix.target != 'x86_64-apple-darwin'
 
-      - name: Write the App Store Connect key for notarization
+      # Signing and notarization are opt-in: only secrets that are set reach
+      # the bundler. An empty APPLE_CERTIFICATE would still make it try (and
+      # fail) to import a certificate, so unset ones are not exported at all.
+      - name: Expose Apple signing secrets when present
         if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'macos-latest'
         env:
-          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
-        run: echo "$APPLE_API_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/apple-api-key.p8"
-
-      - name: Build, sign and release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_PATH: ${{ runner.temp }}/apple-api-key.p8
+          APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
+        run: |
+          for k in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY KEYCHAIN_PASSWORD APPLE_API_ISSUER APPLE_API_KEY; do
+            v="${!k}"
+            [ -n "$v" ] || continue
+            { echo "$k<<SECRET_EOF"; echo "$v"; echo "SECRET_EOF"; } >> "$GITHUB_ENV"
+          done
+          if [ -n "$APPLE_API_KEY_BASE64" ]; then
+            echo "$APPLE_API_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/apple-api-key.p8"
+            echo "APPLE_API_KEY_PATH=$RUNNER_TEMP/apple-api-key.p8" >> "$GITHUB_ENV"
+          fi
+          [ -n "$APPLE_CERTIFICATE" ] && echo "signing: on" || echo "signing: off (no APPLE_CERTIFICATE secret; the app ships unsigned)"
+
+      - name: Build, sign and release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: desktop
           tauriScript: pnpm tauri
@@ -124,7 +139,9 @@ jobs:
   # (pushed to wktorbert/homebrew-tap when HOMEBREW_TAP_TOKEN is set; the
   # formula's download URLs work once the draft release is published).
   cli:
-    if: startsWith(github.ref, 'refs/tags/v')
+    # Runs after the desktop builds whether or not they succeeded: a signing
+    # or bundling problem on one platform must not hold back the CLI release.
+    if: always() && startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     # Job-level so the formula step's `if` can see it: a step cannot read its
@@ -141,7 +158,12 @@ jobs:
       - name: Attach to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "$GITHUB_REF_NAME" dist/sthin_* dist/checksums.txt --clobber
+        run: |
+          # The desktop job normally creates the draft release; create it here
+          # when that job did not get that far.
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
+            gh release create "$GITHUB_REF_NAME" --draft --title "Sthin $GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/sthin_* dist/checksums.txt --clobber
       - name: Publish the Homebrew formula
         if: ${{ env.HOMEBREW_TAP_TOKEN != '' }}
         run: |
