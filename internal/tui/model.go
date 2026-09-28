@@ -61,10 +61,12 @@ type Model struct {
 	// progress view
 	op     string
 	target device.Device
-	stages []device.Stage
-	done   bool
-	opErr  error
-	events chan tea.Msg
+	// confirmOp is what a y in the confirm dialog runs: restore or delete.
+	confirmOp string
+	stages    []device.Stage
+	done      bool
+	opErr     error
+	events    chan tea.Msg
 
 	// category picker
 	pick       []pickRow
@@ -266,9 +268,9 @@ func (m Model) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case modeConfirm:
 		switch s {
 		case "y", "Y":
-			return m.startOp("restore")
+			return m.startOp(m.confirmOp)
 		default:
-			m.mode, m.status = modeList, "restore cancelled"
+			m.mode, m.status = modeList, m.confirmOp+" cancelled"
 		}
 		return m, nil
 	case modeRename:
@@ -327,7 +329,7 @@ func (m Model) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 	case "tab":
 		m.cursor = m.nextPanelStart()
-	case "enter", "r", "t", "c":
+	case "enter", "r", "t", "c", "d":
 		if m.busy {
 			return m, nil
 		}
@@ -343,7 +345,9 @@ func (m Model) key(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		case "enter":
 			return m.startOp("boot")
 		case "r":
-			m.target, m.mode = d, modeConfirm
+			m.target, m.mode, m.confirmOp = d, modeConfirm, "restore"
+		case "d":
+			m.target, m.mode, m.confirmOp = d, modeConfirm, "delete"
 		case "t":
 			return m.startOp("shutdown")
 		case "c":
@@ -395,6 +399,15 @@ func (m Model) startOp(op string) (tea.Model, tea.Cmd) {
 	case "restore":
 		m.mode = modeProgress
 		run = func() error { return p.Restore(ctx, d.ID, report) }
+	case "delete":
+		del, ok := p.(device.Deleter)
+		if !ok {
+			m.busy, m.events = false, nil
+			m.mode, m.status = modeList, string(d.Platform)+" provider cannot delete devices"
+			return m, nil
+		}
+		m.mode, m.status = modeList, "deleting "+d.Name+"…"
+		run = func() error { return del.Delete(ctx, d.ID) }
 	default:
 		m.mode, m.status = modeList, "shutting down "+d.Name+"…"
 		run = func() error { return p.Shutdown(ctx, d.ID) }

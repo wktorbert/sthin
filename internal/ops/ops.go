@@ -25,6 +25,20 @@ func ResolveVirtual(ctx context.Context, reg *device.Registry, id, op string) (d
 	return p, d, nil
 }
 
+// Delete removes a virtual device through the Provider's Deleter seam and
+// drops any lease held on it, so an agent cannot keep a device that is gone.
+// Callers resolve and refuse physical devices first (ResolveVirtual).
+func Delete(ctx context.Context, p device.Provider, d device.Device, pool lease.Pool) error {
+	del, ok := p.(device.Deleter)
+	if !ok {
+		return fmt.Errorf("%s provider cannot delete devices", d.Platform)
+	}
+	if err := del.Delete(ctx, d.ID); err != nil {
+		return err
+	}
+	return pool.Release(d.ID)
+}
+
 // Controller returns the Provider's Controller seam or a clear error.
 func Controller(p device.Provider) (device.Controller, error) {
 	c, ok := p.(device.Controller)

@@ -51,7 +51,7 @@ check "AC3 build windows"        windows_build
 echo "── smoke ──────────────────────────────────"
 help_lists_commands() {
   local out; out="$(bin/sthin --help)" || return 1
-  for c in list boot restore shutdown measure doctor profile version run logs mcp serve lease release leases adb; do
+  for c in list boot restore shutdown measure doctor profile version run logs mcp serve lease release leases adb delete; do
     grep -qE "^\s+$c\b" <<<"$out" || { echo "missing subcommand: $c"; return 1; }
   done
   out="$(bin/sthin boot --help)" || return 1

@@ -90,6 +90,13 @@ type Renamer interface {
 	Rename(ctx context.Context, id, name string) error
 }
 
+// Deleter is the optional seam for deleting a virtual device for good: simctl
+// delete on iOS, the AVD folder and its .ini on Android. Providers refuse a
+// device that is still running; physical devices are never deleted.
+type Deleter interface {
+	Delete(ctx context.Context, id string) error
+}
+
 // LaunchOptions are the emulator switches a user chooses per AVD (PRD R3.3).
 // Pointers distinguish "not given" from false so an explicit flag overrides
 // the saved preference field by field.

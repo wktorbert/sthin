@@ -95,6 +95,23 @@ func (s Store) Delete(id string) error {
 	return err
 }
 
+// Forget drops everything Sthin remembers about a device, its change record
+// and its preferences, once the device itself has been deleted. A Store with
+// no Home has nothing to forget.
+func (s Store) Forget(id string) error {
+	if s.Home == "" {
+		return nil
+	}
+	if err := s.Delete(id); err != nil {
+		return err
+	}
+	err := os.Remove(s.prefsPath(id))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
+}
+
 // MigrateLegacyHome returns ~/.sthin, first renaming a pre-rename ~/.lean to
 // it when ~/.sthin does not exist yet, so saved preferences, change records
 // and leases survive the product rename. Any failure leaves both as they are.

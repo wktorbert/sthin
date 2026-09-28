@@ -165,6 +165,26 @@ func (s *Server) rename(r *request) (any, error) {
 	return map[string]any{"device": d.ID, "name": in.Name}, nil
 }
 
+// deleteDevice removes a shut-down simulator or AVD for good, with Sthin's
+// records and any lease on it.
+func (s *Server) deleteDevice(r *request) (any, error) {
+	var in idIn
+	if err := r.decode(&in); err != nil {
+		return nil, err
+	}
+	if err := in.check(); err != nil {
+		return nil, err
+	}
+	p, d, err := ops.ResolveVirtual(r.ctx, s.Reg, in.ID, "delete")
+	if err != nil {
+		return nil, err
+	}
+	if err := ops.Delete(r.ctx, p, d, s.Pool); err != nil {
+		return nil, err
+	}
+	return map[string]any{"device": d.ID}, nil
+}
+
 func (s *Server) measure(r *request) (any, error) {
 	var in idIn
 	if err := r.decode(&in); err != nil {

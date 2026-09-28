@@ -32,6 +32,7 @@ sthin list [--json]                simulators and AVDs with state, slim state, f
 sthin boot <id|name> [--stock] [--except cat,cat] [--ram MB] [--headless] [--json]
 sthin restore <id|name> [--json]   undo exactly what Sthin changed
 sthin shutdown <id|name>
+sthin delete <id|name> [--yes]     delete a simulator or AVD for good (asks first)
 sthin measure <id|name> [--json]   host memory footprint of a running device
 sthin doctor [--json]              toolchain and Profile checks
 sthin profile <ios|android> [--json]
@@ -105,6 +106,10 @@ Exit codes are stable: 0 success, 1 failure, 2 usage error or unknown device, 3 
 ### Naming devices
 
 `sthin rename <id> "<name>"` renames a simulator (`simctl rename`, immediate) or an AVD (`avd.ini.displayname` in its `config.ini`, shown from the emulator's next start). `sthin boot <id> --name "<name>"` renames first and then boots, so the window opens under the new name; in the TUI, `n` opens a rename box. The AVD's id and Sthin's saved preferences are unaffected. Physical devices are never renamed.
+
+### Deleting devices
+
+`sthin delete <id>` removes a simulator (`simctl delete`) or an AVD (its `.avd` folder and `.ini`, what `avdmanager delete avd` does, without needing Java) for good, together with Sthin's saved preferences, change record and any lease on it. It asks first; `--yes` skips the prompt for scripts, and a cancelled prompt exits 2. The device must be shut down. In the TUI, `d` asks y/n on the selected row; agents have the `delete` MCP tool and `serve` method. Physical devices are never deleted.
 
 ### Android launch options
 

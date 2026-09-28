@@ -54,6 +54,7 @@ func New(d Deps) *mcp.Server {
 	mcp.AddTool(s, &mcp.Tool{Name: "run", Description: "Install and launch a mobile project's built debug app on a device (Flutter, React Native, Xcode or Gradle project; or an explicit .app/.apk), then optionally open a deep link. Build the app first; the interactive framework hand-off is CLI-only (sthin run)."}, t.run)
 	mcp.AddTool(s, &mcp.Tool{Name: "open_url", Description: "Open a deep link or web URL on a device."}, t.openURL)
 	mcp.AddTool(s, &mcp.Tool{Name: "rename", Description: "Rename a simulator or AVD (physical devices are refused)."}, t.rename)
+	mcp.AddTool(s, &mcp.Tool{Name: "delete", Description: "Delete a simulator or AVD for good: its data, Sthin's saved records and any lease on it. The device must be shut down; physical devices are refused."}, t.deleteDevice)
 	return s
 }
 
@@ -401,6 +402,19 @@ func (t tools) openURL(ctx context.Context, _ *mcp.CallToolRequest, in urlIn) (*
 		return nil, nil, err
 	}
 	return textResult("opened " + in.URL + " on " + d.Name)
+}
+
+// deleteDevice removes a shut-down simulator or AVD together with everything
+// Sthin remembers about it.
+func (t tools) deleteDevice(ctx context.Context, _ *mcp.CallToolRequest, in idIn) (*mcp.CallToolResult, any, error) {
+	p, d, err := t.resolveVirtual(ctx, in.ID, "delete")
+	if err != nil {
+		return nil, nil, err
+	}
+	if err := ops.Delete(ctx, p, d, t.Pool); err != nil {
+		return nil, nil, err
+	}
+	return textResult(d.Name + " deleted")
 }
 
 func (t tools) rename(ctx context.Context, _ *mcp.CallToolRequest, in renameIn) (*mcp.CallToolResult, any, error) {

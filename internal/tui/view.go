@@ -31,6 +31,7 @@ const keyHelp = `  ↑/↓  j/k   move
   l          follow the device log live (filter, level, save)
   o          Android launch options: cold boot, audio, low-RAM, headless, RAM (saved per AVD)
   n          rename the simulator or AVD
+  d          delete the simulator or AVD for good (asks y/n)
   ?          toggle this help
   q          quit`
 
@@ -87,6 +88,9 @@ func (m Model) View() string {
 		body = m.dialogLines("Wireless ADB", m.wirelessLines(), w, bodyH)
 	case m.mode == modePicker:
 		body = m.dialogLines("Keep enabled on "+m.target.Name, m.pickerLines(), w, bodyH)
+	case m.mode == modeConfirm && m.confirmOp == "delete":
+		txt := fmt.Sprintf("Delete %s for good?\nThe device, its data and Sthin's saved settings for it are removed. There is no undo.\n\n%s", m.target.Name, warnStyle.Render("[y/N]"))
+		body = m.dialog("Delete", txt, w, bodyH)
 	case m.mode == modeConfirm:
 		txt := fmt.Sprintf("Restore %s to stock?\nThis undoes everything Sthin changed.\n\n%s", m.target.Name, warnStyle.Render("[y/N]"))
 		body = m.dialog("Restore", txt, w, bodyH)

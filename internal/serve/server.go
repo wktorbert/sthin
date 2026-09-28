@@ -79,6 +79,7 @@ func New(d Deps) *Server {
 		"restore":           s.restore,
 		"shutdown":          s.shutdown,
 		"rename":            s.rename,
+		"delete":            s.deleteDevice,
 		"measure":           s.measure,
 		"doctor":            s.doctor,
 		"profile":           s.profile,
