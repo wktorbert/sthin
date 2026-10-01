@@ -8,8 +8,13 @@ set -euo pipefail
 version="${1:?version}"; sums="${2:?checksums.txt}"
 repo="https://github.com/wktorbert/sthin"
 sha() { grep " sthin_${version}_$1.tar.gz\$" "$sums" | awk '{print $1}'; }
+# Bottle checksums, by Homebrew tag (see bottle_tag in release-cli.sh).
+bsha() { grep " sthin-${version}.$1.bottle.tar.gz\$" "$sums" | awk '{print $1}'; }
 for t in darwin_arm64 darwin_amd64 linux_amd64 linux_arm64; do
   [ -n "$(sha $t)" ] || { echo "missing checksum for $t" >&2; exit 1; }
+done
+for t in arm64_sonoma sonoma x86_64_linux arm64_linux; do
+  [ -n "$(bsha $t)" ] || { echo "missing bottle checksum for $t" >&2; exit 1; }
 done
 cat <<RB
 # typed: false
@@ -21,6 +26,19 @@ class Sthin < Formula
   homepage "${repo}"
   version "${version}"
   license "MIT"
+
+  # Prebuilt bottles. With a matching bottle Homebrew pours it and skips its
+  # build-from-source checks, so no Xcode Command Line Tools (macOS) or gcc
+  # (Linux) are needed. The macOS tags name the oldest macOS each bottle is
+  # for; newer releases pour them too. The url/sha256 blocks below stay as the
+  # --build-from-source path and for platforms without a bottle.
+  bottle do
+    root_url "${repo}/releases/download/v${version}"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma: "$(bsha arm64_sonoma)"
+    sha256 cellar: :any_skip_relocation, sonoma:       "$(bsha sonoma)"
+    sha256 cellar: :any_skip_relocation, arm64_linux:  "$(bsha arm64_linux)"
+    sha256 cellar: :any_skip_relocation, x86_64_linux: "$(bsha x86_64_linux)"
+  end
 
   on_macos do
     on_arm do
@@ -46,6 +64,7 @@ class Sthin < Formula
 
   def install
     bin.install "sthin"
+    generate_completions_from_executable(bin/"sthin", "completion")
   end
 
   test do

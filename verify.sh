@@ -61,6 +61,18 @@ help_lists_commands() {
 }
 check "AC4 help lists commands"  help_lists_commands
 
+completions() {
+  for sh in bash zsh fish powershell; do
+    bin/sthin completion "$sh" | grep -q sthin || { echo "no $sh script"; return 1; }
+  done
+  out="$(bin/sthin __complete logs --level "w" 2>/dev/null)" || return 1
+  grep -qx warn <<<"$out" || { echo "level completion: $out"; return 1; }
+  out="$(bin/sthin __complete boot --except "siri,st" 2>/dev/null)" || return 1
+  grep -qx 'siri,store' <<<"$out" || { echo "except completion: $out"; return 1; }
+  bin/sthin __complete boot "" >/dev/null 2>&1 || { echo "device completion failed"; return 1; }
+}
+check "AC14 shell completions"   completions
+
 list_json() {
   bin/sthin list --json > /tmp/oneshot-list.json || return 1
   python3 - <<'PY'

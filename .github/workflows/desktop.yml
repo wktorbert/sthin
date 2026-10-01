@@ -163,7 +163,7 @@ jobs:
           # when that job did not get that far.
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
             gh release create "$GITHUB_REF_NAME" --draft --title "Sthin $GITHUB_REF_NAME" --generate-notes
-          gh release upload "$GITHUB_REF_NAME" dist/sthin_* dist/checksums.txt --clobber
+          gh release upload "$GITHUB_REF_NAME" dist/sthin_* dist/sthin-*.bottle.tar.gz dist/checksums.txt --clobber
       - name: Publish the Homebrew formula
         if: ${{ env.HOMEBREW_TAP_TOKEN != '' }}
         run: |

@@ -22,7 +22,24 @@ Or download an archive from the [releases page](https://github.com/wktorbert/sth
 shasum -a 256 -c --ignore-missing checksums.txt
 ```
 
-Releases are cut from a `v*` tag: the desktop workflow builds and signs the app, and the same tag attaches the CLI archives, the checksum file, and updates the Homebrew tap (`scripts/release-cli.sh` and `scripts/homebrew-formula.sh` are what run there, and both work locally).
+Releases are cut from a `v*` tag: the desktop workflow builds and signs the app, and the same tag attaches the CLI archives, the checksum file, Homebrew bottles for macOS and Linux, and updates the Homebrew tap (`scripts/release-cli.sh` and `scripts/homebrew-formula.sh` are what run there, and both work locally). The bottles are what let `brew install` work without Xcode Command Line Tools or a compiler: Homebrew pours them instead of treating the formula as a source build.
+
+### Shell completions
+
+Homebrew installs them. Otherwise, with the binary on your PATH:
+
+```
+# zsh (add before compinit in ~/.zshrc)
+echo 'source <(sthin completion zsh)' >> ~/.zshrc
+# bash
+echo 'source <(sthin completion bash)' >> ~/.bashrc
+# fish
+sthin completion fish > ~/.config/fish/completions/sthin.fish
+# PowerShell
+sthin completion powershell | Out-String | Invoke-Expression
+```
+
+Release archives carry the same scripts in `completions/`. Completion knows your devices: `sthin boot <TAB>` offers simulators and AVDs by name and ID with their OS and state, filtered to what the command accepts (no physical devices for `boot`, only booted ones for `measure`, only shut-down ones for `delete`). A name shared by several devices, such as the same iPad across two runtimes, is offered by ID only. `--except <TAB>` lists the categories of the named device's platform, `--level` and `--platform` their values. The device list is cached for 30 seconds under the Sthin home and dropped by any command that changes a device.
 
 ## Commands
 

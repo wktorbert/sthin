@@ -13,6 +13,10 @@ var ErrUsage = errors.New("usage")
 // Registry holds the Providers for this host and resolves Devices across them.
 type Registry struct {
 	Providers []Provider
+	// AfterList, when set, sees the result of every ListAll. Shell completion
+	// caches the last listing through it so a running TUI or desktop app keeps
+	// completions fresh for every terminal.
+	AfterList func([]PlatformList)
 }
 
 // PlatformList is the result of listing one Provider.
@@ -34,6 +38,9 @@ func (r *Registry) ListAll(ctx context.Context) []PlatformList {
 			pl.Devices, pl.Err = p.List(ctx)
 		}
 		out = append(out, pl)
+	}
+	if r.AfterList != nil {
+		r.AfterList(out)
 	}
 	return out
 }

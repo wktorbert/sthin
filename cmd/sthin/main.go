@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/wktorbert/sthin/internal/complete"
 	"github.com/wktorbert/sthin/internal/device"
 	"github.com/wktorbert/sthin/internal/host"
 	"github.com/wktorbert/sthin/internal/lease"
@@ -39,6 +40,7 @@ type app struct {
 	prefs state.Store // per-device category preferences
 	run   device.Runner
 	env   host.Env
+	cache complete.Cache // last device listing, for shell completion
 }
 
 // requireVirtual rejects physical devices for operations that modify a device.
@@ -87,6 +89,7 @@ func newRootCmd(a *app) *cobra.Command {
 			Run:   func(cmd *cobra.Command, _ []string) { fmt.Fprintln(cmd.OutOrStdout(), "sthin", version) },
 		},
 	)
+	attachCompletions(root, a)
 	return root
 }
 
@@ -118,6 +121,8 @@ func exitCode(err error) int {
 
 func main() {
 	a := &app{reg: wiring.NewRegistry(), ctx: context.Background(), prefs: state.Default(), run: wiring.NewRunner(), env: wiring.NewEnv()}
+	a.cache = newCache(a.prefs.Home)
+	a.reg.AfterList = a.cache.Write
 	err := newRootCmd(a).Execute()
 	if err != nil {
 		var ee *exitError
